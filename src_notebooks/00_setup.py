@@ -1,7 +1,7 @@
 # %% [markdown]
 # # 00 — Setup, and what a benchmark task actually is
 #
-# **Session:** Benchmarking the Quality of AI Code Generators · PhD School on LLMs for SE
+# **Session:** Benchmarking the Quality of AI Code Generators · LLMA4SE 2026
 # **Time:** ~15 minutes
 #
 # By the end of this notebook you will have:

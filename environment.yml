@@ -27,6 +27,7 @@ dependencies:
       - matplotlib>=3.7,<4
       # --- CQBench evaluator dependencies (pins from the study) -----------
       - lizard==1.17.25          # function extraction, NLOC, CCN, Halstead
+      - tqdm>=4.65,<5            # progress bars inside the vendored study modules
       - tree-sitter==0.23.2
       - tree-sitter-language-pack>=0.7,<1
       - openpyxl==3.1.5          # reads the Pylint -> ODC mapping workbook

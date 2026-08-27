@@ -1,7 +1,8 @@
 # Benchmarking the Quality of AI Code Generators — hands-on
 
-A three-hour, Python-only hands-on session built on **CQBench v1**, the static
-code-quality challenge benchmark released with *"[paper title]"*.
+A three-hour, Python-only hands-on session for **LLMA4SE 2026**, built on
+**CQBench v1** — the static code-quality challenge benchmark released with
+*"[paper title — fill this in]"*.
 
 You will score **200 benchmark tasks × 5 code authors = 1,000 evaluations**
 live, on your own laptop, in about two minutes — then take the numbers apart.
