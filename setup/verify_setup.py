@@ -33,12 +33,46 @@ def main() -> int:
 
     check("python >= 3.9", sys.version_info >= (3, 9), sys.version.split()[0])
 
-    try:
-        import pandas, numpy, scipy, matplotlib, lizard, openpyxl  # noqa: F401
-        check("analysis packages import", True,
-              f"pandas {pandas.__version__}, numpy {numpy.__version__}")
-    except ImportError as exc:
-        check("analysis packages import", False, str(exc))
+    # Every third-party module the session needs, with the pip spec that provides
+    # it. Checked in one pass so a missing package is reported with its fix
+    # instead of surfacing later as an opaque ImportError inside a notebook.
+    REQUIRED = [
+        ("pandas", "pandas>=2.0,<3"),
+        ("numpy", "numpy>=1.24,<3"),
+        ("scipy", "scipy>=1.10,<2"),
+        ("matplotlib", "matplotlib>=3.7,<4"),
+        ("lizard", "lizard==1.17.25"),
+        ("openpyxl", "openpyxl==3.1.5"),
+        ("tqdm", "tqdm>=4.65,<5"),
+        ("pyarrow", "pyarrow>=15"),
+        ("tree_sitter", "tree-sitter==0.23.2"),
+        ("tree_sitter_language_pack", "tree-sitter-language-pack>=0.7,<1"),
+    ]
+    import importlib
+
+    missing = []
+    for module, spec in REQUIRED:
+        try:
+            importlib.import_module(module)
+        except ImportError:
+            missing.append(spec)
+
+    if missing:
+        check("required packages", False, f"{len(missing)} missing")
+        print("\n" + "-" * 52)
+        print("Missing packages. Install them into THIS interpreter with:\n")
+        print(f"    {Path(sys.executable).name} -m pip install " +
+              " ".join(f'"{spec}"' for spec in missing))
+        print(f"\n(interpreter: {sys.executable})")
+        print("\nUse `python -m pip`, not a bare `pip`: a bare `pip` can belong")
+        print("to a different interpreter, in which case the install succeeds and")
+        print("the import still fails.")
+        print("-" * 52)
+        return 1
+
+    import numpy, pandas  # noqa: E402
+    check("required packages", True,
+          f"all {len(REQUIRED)} present · pandas {pandas.__version__}, numpy {numpy.__version__}")
 
     try:
         import cqhandson
