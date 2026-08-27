@@ -7,16 +7,41 @@ A three-hour, Python-only hands-on session for **LLMA4SE 2026**, built on
 You will score **200 benchmark tasks × 5 code authors = 1,000 evaluations**
 live, on your own laptop, in about two minutes — then take the numbers apart.
 
-| Author | What it is |
-|---|---|
-| **Human** | The original human implementation the task was mined from |
-| **ChatGPT** | `gpt-3.5-turbo` |
-| **DeepSeek-Coder** | `DeepSeek-Coder-33B-Instruct` |
-| **Qwen2.5-Coder** | `Qwen2.5-Coder-32B-Instruct` |
-| **Claude Opus 4.8** | A frontier model released *after* the benchmark was built |
+| Author | What it is | Role |
+|---|---|---|
+| **Human** | The original human implementation the task was mined from | reference |
+| **ChatGPT** | `gpt-3.5-turbo` | built the benchmark |
+| **DeepSeek-Coder** | `DeepSeek-Coder-33B-Instruct` | built the benchmark |
+| **Qwen2.5-Coder** | `Qwen2.5-Coder-32B-Instruct` | built the benchmark |
+| **Claude Opus 4.8** | A frontier model released *after* the benchmark was built | **under test** |
 
 No code is generated during the session: every submission already exists in
 `data/predictions/`. The session is about **measurement**, not generation.
+
+### The asymmetry that makes this testable
+
+**The five authors are not five peers, and the `Role` column is the most
+important thing in this repository.**
+
+CQBench kept a task only when at least two of ChatGPT, DeepSeek-Coder and
+Qwen2.5-Coder produced three or more findings of a shared class. Those three
+*defined* the selection: their failure rates here are inflated by construction
+and are not estimates of anything. They are a ceiling.
+
+The other two took no part in it. The human reference only had to parse and be
+non-trivial — its findings never entered the consensus gate. Claude Opus 4.8 was
+released after the benchmark was built.
+
+So the session treats **Claude as the submission under test** and the other four
+as **baselines**, following the flow a real CQBench user follows — validate,
+evaluate, compare. The consequence to keep in mind throughout:
+
+> Beating the three models that built the benchmark is the weakest possible
+> result. Reaching the **human reference** is the one that means something.
+
+The distinction is encoded in the data, not just in prose: `cqhandson.AUTHOR_ROLES`
+tags every author, `results_frame()` carries a `role` column, and every headline
+table prints it.
 
 ---
 
@@ -26,7 +51,7 @@ No code is generated during the session: every submission already exists in
 |---|---|---|---|
 | 00 | `00_setup.ipynb` | 15 min | Check the environment, meet the data, read one task and its five answers |
 | 01 | `01_measurement_pipeline.ipynb` | 35 min | Run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
-| 02 | `02_run_the_benchmark.ipynb` | 30 min | Score all 5 authors on all 200 tasks; verify the fast runner against the reference evaluator; reproduce Table 5 of the paper |
+| 02 | `02_run_the_benchmark.ipynb` | 30 min | The real CQBench flow — **validate → evaluate → compare** — with Claude as the submission; verify the fast runner against the reference evaluator; reproduce Table 5 of the paper |
 | 03 | `03_rq1_structure_and_style.ipynb` | 35 min | **RQ1** — do models write structurally different code? NLOC, cyclomatic complexity, Halstead, maintainability, lexical diversity |
 | 04 | `04_rq2_defects.ipynb` | 30 min | **RQ2** — defect types and frequencies, mapped to Orthogonal Defect Classification |
 | 05 | `05_rq3_security.ipynb` | 30 min | **RQ3** — vulnerability classes and severity, mapped to CWE |

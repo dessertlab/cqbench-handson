@@ -49,15 +49,23 @@ def rate(frame: pd.DataFrame, metric: str) -> float:
     return float(RATE_METRICS[metric](frame).astype(float).mean())
 
 
-def headline_table(frame: pd.DataFrame) -> pd.DataFrame:
+def headline_table(frame: pd.DataFrame, show_role: bool = True) -> pd.DataFrame:
     """Table 5 of the paper, per author: the numbers that get quoted.
 
     `frame` is the tidy multi-author frame from `results_frame()`.
+
+    The `Role` column is on by default and is the most important column in the
+    table: the three authors marked "built it" defined the selection gates, so
+    their rates here are inflated by construction and are not estimates of
+    anything. Only the reference and the model under test can be read straight.
     """
+    from .loading import ROLE_SHORT
+
     rows = []
     for author, group in frame.groupby("author", observed=True, sort=False):
         rows.append({
             "Author":        group["author_label"].iloc[0],
+            "Role":          ROLE_SHORT.get(group["role"].iloc[0], ""),
             "N":             len(group),
             "Defective %":   100 * group["defective"].mean(),
             "Vulnerable %":  100 * group["vulnerable"].mean(),
@@ -66,7 +74,50 @@ def headline_table(frame: pd.DataFrame) -> pd.DataFrame:
             "Total defects": int(group["defects_total"].sum()),
             "Total vulns":   int(group["vulns_total"].sum()),
         })
-    return pd.DataFrame(rows).set_index("Author")
+    table = pd.DataFrame(rows).set_index("Author")
+    return table if show_role else table.drop(columns="Role")
+
+
+def compare_submission(
+    frame: pd.DataFrame,
+    metric: str,
+    submission: str = "claude",
+) -> pd.DataFrame:
+    """The submission against every shipped baseline, task-paired, with CIs.
+
+    This is the direction a CQBench *user* cares about: "is my model better
+    than the baselines on the same tasks?" — the mirror image of
+    `compare_authors`, which measures everyone against one reference.
+
+    Read the rows by role. Beating the three construction baselines is the
+    weakest possible result: they defined the benchmark. Reaching the human
+    reference is the one that means something.
+    """
+    from .loading import AUTHOR_LABELS, AUTHOR_ROLES, ROLE_SHORT
+
+    wide = (
+        frame.assign(value=RATE_METRICS[metric](frame).astype(float))
+             .pivot_table(index="task_id", columns="author", values="value", observed=True)
+    )
+    rows = []
+    for baseline in wide.columns:
+        if baseline == submission:
+            continue
+        stats = paired_bootstrap_ci(
+            wide[submission], wide[baseline], label=f"{metric}:{submission}:{baseline}"
+        )
+        rows.append({
+            "baseline": AUTHOR_LABELS.get(baseline, baseline),
+            "role": ROLE_SHORT.get(AUTHOR_ROLES.get(baseline, ""), ""),
+            "submission": stats["a"],
+            "baseline_value": stats["b"],
+            "delta": stats["delta"],
+            "ci_lo": stats["ci_lo"],
+            "ci_hi": stats["ci_hi"],
+            "significant": stats["significant"],
+            "n": stats["n"],
+        })
+    return pd.DataFrame(rows)
 
 
 def _seed(label: str) -> int:

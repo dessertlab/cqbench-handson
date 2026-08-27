@@ -1,38 +1,78 @@
 # %% [markdown]
-# # 02 — Running the benchmark: 1,000 evaluations
+# # 02 — Submitting a model to CQBench
 #
 # **Time:** ~30 minutes
 #
-# Five authors × 200 tasks. We will:
+# This is the notebook where you *use* the benchmark, following the flow a real
+# CQBench user follows:
 #
-# 1. see why the stock evaluator would take about **nine hours** for this,
-# 2. **verify** that our faster runner produces identical results — not assume it,
-# 3. run the whole thing in ~2 minutes,
-# 4. reproduce a published table, and cross-check against the study's own frozen
-#    results.
+# > **validate** the submission → **evaluate** it → **compare** it with the
+# > shipped baselines.
 #
-# Step 2 is not ceremony. Benchmark tooling that is "obviously equivalent" is
-# where reported numbers quietly go wrong.
+# Our submission is **Claude Opus 4.8**. Its 200 answers already exist in
+# `data/predictions/claude.jsonl`; treat them as the output of a model you just
+# ran. The other four authors are the baselines you score it against.
+#
+# Along the way we will see why the stock evaluator would take about **nine
+# hours** for this, verify that our faster runner is identical rather than
+# assuming it, and reproduce a published table.
 
 # %%
-import sys, pathlib, time, json
+import sys, pathlib, time, json, os, subprocess, tempfile
 sys.path.insert(0, str(pathlib.Path.cwd().parent))
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import cqhandson as ch
 from cqhandson import paths, runner
-from cqhandson.metrics import compare_authors
+from cqhandson.metrics import compare_submission
 
 ch.style()
 pd.set_option("display.width", 200)
 pd.set_option("display.max_columns", 40)
 
 print(runner.check_analyzers())
-print("CPU cores available:", __import__("os").cpu_count())
+print("CPU cores available:", os.cpu_count())
 
 # %% [markdown]
-# ## 1. Why the reference evaluator is slow
+# ## 1. Who built this benchmark, and who is being tested
+#
+# **Read this before any number.** The five authors are not five peers.
+#
+# CQBench kept a task only when **at least two of ChatGPT, DeepSeek-Coder and
+# Qwen2.5-Coder** produced three or more findings of a shared class. Those three
+# models *defined* the selection. Their failure rates on this benchmark are
+# inflated by construction and are not estimates of anything — they are the
+# ceiling, and they are there to give the other two a scale.
+#
+# The other two took no part in it:
+#
+# * the **human reference** only had to parse and be non-trivial; its findings
+#   never entered the consensus gate;
+# * **Claude Opus 4.8** was released *after* the benchmark was built.
+#
+# That asymmetry is the whole reason the benchmark can test anything. It is
+# recorded in the data, not just in this paragraph:
+
+# %%
+roles = pd.DataFrame({
+    "Author": [ch.AUTHOR_LABELS[a] for a in ch.AUTHOR_ORDER],
+    "Role": [ch.ROLE_LABELS[ch.AUTHOR_ROLES[a]] for a in ch.AUTHOR_ORDER],
+}).set_index("Author")
+display(roles)
+
+print(f"submission : {ch.AUTHOR_LABELS[ch.SUBMISSION]}")
+print(f"baselines  : {', '.join(ch.AUTHOR_LABELS[b] for b in ch.BASELINES)}")
+
+# %% [markdown]
+# Keep the consequence in mind for the rest of the session:
+#
+# > **Beating the three construction models is the weakest possible result.**
+# > They defined the tasks. Reaching the *human reference* is the result that
+# > means something.
+
+# %% [markdown]
+# ## 2. Why the reference evaluator is slow
 #
 # `python -m cqbench evaluate` scores **one task per process pair**. For each
 # task it starts a fresh `pylint` and a fresh `semgrep`. Pylint is cheap
@@ -50,16 +90,14 @@ print("CPU cores available:", __import__("os").cpu_count())
 # Time it yourself on a single file if you want to feel it:
 
 # %%
-import subprocess, tempfile, os
-code = ch.load_predictions("human")["python:gp206544"]
+code = ch.load_predictions("claude")["python:gp206544"]
 
 with tempfile.TemporaryDirectory() as directory:
     target = pathlib.Path(directory) / "one.py"
     target.write_text(code, encoding="utf-8")
 
     environment = dict(os.environ)          # note: version check NOT disabled
-    for key in ("SEMGREP_ENABLE_VERSION_CHECK",):
-        environment.pop(key, None)
+    environment.pop("SEMGREP_ENABLE_VERSION_CHECK", None)
 
     started = time.time()
     subprocess.run(["semgrep", "scan", "--config", str(paths.SEMGREP_RULES),
@@ -74,7 +112,7 @@ with tempfile.TemporaryDirectory() as directory:
     print(f"semgrep, one file, no version check  : {time.time() - started:5.1f}s")
 
 # %% [markdown]
-# ## 2. Moving the process boundary
+# ## 3. Moving the process boundary — and proving it is safe
 #
 # `cqhandson.runner` does exactly the same analysis with a different process
 # layout:
@@ -94,9 +132,6 @@ with tempfile.TemporaryDirectory() as directory:
 # * **Pylint** is batched with `--disable=duplicate-code`. R0801 is the only
 #   check that compares *across* modules; it can never fire when files are linted
 #   one at a time, so disabling it makes a batch identical to per-file runs.
-#   Every other Pylint message is file-local.
-#
-# ### Verify it
 #
 # `results/reference_check/` holds the output of the **stock** `cqbench evaluate`
 # on an 8-task slice (chosen to cover `nontrivial`, `target_missing`,
@@ -120,41 +155,61 @@ assert not any(differences.values()), differences
 print("\nIdentical. The speed-up is free.")
 
 # %% [markdown]
-# > **Want to see the slow path yourself?** Uncomment the cell below — it runs
-# > the stock CLI on those 8 tasks and takes about a minute even with the version
-# > check disabled. That is the command a user of the released benchmark runs.
+# ## 4. Step one — validate the submission
+#
+# Before running any analyzer, CQBench checks the submission file itself: one
+# JSON object per task, `task_id` as the only join key, no unknown ids, no
+# duplicates, `code` always a string. This is the stock CLI, unchanged.
 
 # %%
-# import subprocess, os
-# environment = dict(os.environ) | {"SEMGREP_ENABLE_VERSION_CHECK": "0"}
-# started = time.time()
-# subprocess.run(
-#     [sys.executable, "-m", "cqbench", "evaluate",
-#      "--tasks", str(paths.DATA / "reference_check/tasks.jsonl"),
-#      "--references", str(paths.DATA / "reference_check/references.jsonl"),
-#      "--predictions", str(paths.DATA / "reference_check/human.jsonl"),
-#      "--output", "/tmp/official_rerun.jsonl", "--overwrite"],
-#     cwd=paths.VENDOR, env=environment, check=True)
-# print(f"stock evaluator, 8 tasks: {time.time() - started:.0f}s")
+validate = subprocess.run(
+    [sys.executable, "-m", "cqbench", "validate-submission",
+     "--tasks", str(paths.TASKS),
+     "--predictions", str(paths.PREDICTIONS / f"{ch.SUBMISSION}.jsonl")],
+    cwd=paths.VENDOR, capture_output=True, text=True,
+    env=dict(os.environ) | {"SEMGREP_ENABLE_VERSION_CHECK": "0"},
+)
+print(validate.stdout.strip() or validate.stderr.strip())
 
 # %% [markdown]
-# ## 3. The run
+# `{"tasks": 200, "predictions": 200}` — every task answered.
 #
-# Five authors, 200 tasks each. Expect roughly **2 minutes**; more cores, less
-# time. Results land in `results/live/`.
+# Note what validation does **not** do: it never looks at the code. A file of 200
+# empty strings validates fine. Missing predictions are also legal — they stay in
+# the denominator and are scored as empty output. The benchmark refuses to let
+# you quietly shrink your own test set.
+
+# %% [markdown]
+# ## 5. Step two — evaluate the submission
+#
+# 200 tasks, one author. Expect **20–30 seconds**.
 
 # %%
 started = time.time()
-counts = runner.evaluate_all(ch.AUTHOR_ORDER, jobs=None)
-elapsed = time.time() - started
-
-print(f"\n{sum(counts.values())} evaluations in {elapsed:.0f}s "
-      f"({elapsed / sum(counts.values()) * 1000:.0f} ms per evaluation)")
-print(f"the stock evaluator would have taken about "
-      f"{sum(counts.values()) * 33 / 3600:.0f} hours")
+rows = runner.evaluate(
+    paths.PREDICTIONS / f"{ch.SUBMISSION}.jsonl",
+    output=paths.LIVE / f"{ch.SUBMISSION}.jsonl",
+)
+print(f"\n{len(rows)} tasks scored in {time.time() - started:.0f}s")
 
 # %% [markdown]
-# > **If the cell above failed** — no analyzers, no disk, no time — everything
+# That is the whole submission flow. If you had generated 200 completions from
+# your own model this morning, you would now be done.
+#
+# We score the four baselines too, because we want the comparison on *this*
+# machine with *these* analyzer versions rather than trusting a shipped file.
+
+# %%
+started = time.time()
+counts = runner.evaluate_all(ch.BASELINES, jobs=None)
+elapsed = time.time() - started
+total = sum(counts.values()) + len(rows)
+
+print(f"\n{total} evaluations in total, {elapsed:.0f}s for the baselines")
+print(f"the stock evaluator would have taken about {total * 33 / 3600:.0f} hours")
+
+# %% [markdown]
+# > **If the cells above failed** — no analyzers, no disk, no time — everything
 # > downstream still works. `ch.results_frame()` falls back to
 # > `results/precomputed/`, which was produced by exactly this code.
 
@@ -163,24 +218,104 @@ results = ch.results_frame()          # live results if present, else the fallba
 print("source:", paths.results_dir().relative_to(paths.REPO))
 print(f"{len(results)} rows = {results['task_id'].nunique()} tasks "
       f"× {results['author'].nunique()} authors")
-results.head(3)[["author", "task_id", "status", "defects_total", "vulns_total", "cwes"]]
+results.head(3)[["author", "role", "task_id", "status", "defects_total", "vulns_total"]]
 
 # %% [markdown]
-# ## 4. The headline table
-#
-# This is Table 5 of the paper, Python rows, plus the three older baselines.
+# ## 6. The scoreboard
 #
 # * **Defective** — share of tasks with ≥1 Pylint finding that maps to ODC
 # * **Vulnerable** — share with ≥1 CWE-carrying Semgrep finding
 # * **High sev.** — share with ≥1 `CRITICAL`/`ERROR` finding
 # * **Clean** — `clean_strict@1`: all four layers passed
+#
+# Read the `Role` column first. It is the most important column in the table.
 
 # %%
 headline = ch.headline_table(results)
 display(headline.round(1))
 
 # %% [markdown]
-# ### Did we reproduce the paper?
+# The submission clears the clean-code bar on **27.5%** of these tasks. In
+# isolation that number says nothing at all — it needs the scale the other rows
+# provide:
+#
+# * against the three models that **built** the benchmark (0.5%, 2.5%, 5.5%) it
+#   looks transformative, and that comparison is nearly worthless: those tasks
+#   were selected *because* those models failed them;
+# * against the **human reference** (31.5%) it is slightly behind, and that is
+#   the comparison that carries information.
+#
+# Notice also that the submission is the only author with no structural failures
+# at all, and that Qwen accumulates 649 findings against the human's 284 on the
+# same 200 tasks.
+
+# %% [markdown]
+# ## 7. Step three — compare, with the shipped tool
+#
+# CQBench ships `cqbench compare` for exactly this. It merges the submission
+# with each baseline **task by task**, then bootstraps the paired difference
+# 10,000 times with a per-comparison seed.
+#
+# Pairing is the point. Every author answered the *same* 200 tasks, so we can
+# subtract per task and average the differences, instead of comparing two
+# independent percentages. That removes task difficulty from the comparison and
+# gives far tighter intervals.
+
+# %%
+comparison_path = paths.RESULTS / "comparison.csv"
+compare = subprocess.run(
+    [sys.executable, "-m", "cqbench", "compare",
+     "--submission", str(paths.results_dir() / f"{ch.SUBMISSION}.jsonl"),
+     *sum([["--baseline", str(paths.results_dir() / f"{b}.jsonl")] for b in ch.BASELINES], []),
+     "--output", str(comparison_path)],
+    cwd=paths.VENDOR, capture_output=True, text=True,
+    env=dict(os.environ) | {"SEMGREP_ENABLE_VERSION_CHECK": "0"},
+)
+print(compare.stdout.strip() or compare.stderr.strip()[-500:])
+
+table = pd.read_csv(comparison_path)
+table["role"] = table["baseline"].map(
+    lambda b: ch.ROLE_SHORT[ch.AUTHOR_ROLES[b]])
+table["baseline"] = table["baseline"].map(ch.AUTHOR_LABELS)
+display(table[table["metric"] == "clean_strict_at_1"]
+        [["baseline", "role", "submission", "baseline_value", "delta", "ci_lo", "ci_hi"]]
+        .round(3))
+
+# %% [markdown]
+# **How to read a row.** `delta` is the submission's rate minus the baseline's,
+# averaged over the 200 paired tasks. If the interval `[ci_lo, ci_hi]` excludes
+# zero, the difference is not explained by which tasks happened to be sampled.
+#
+# Against the human reference: **−0.04, interval [−0.11, +0.03]**. It contains
+# zero, so on the headline metric the submission is **statistically
+# indistinguishable from the human reference** — the first model in this
+# comparison for which that is true.
+
+# %%
+for metric in ("strict_nontrivial_rate", "defect_free_rate",
+               "vulnerability_free_rate", "high_severity_free_rate"):
+    result = compare_submission(results, metric, submission=ch.SUBMISSION)
+    print(f"\n{metric}  ({ch.AUTHOR_LABELS[ch.SUBMISSION]} minus each baseline, paired)")
+    print(result.round(3).to_string(index=False))
+
+# %% [markdown]
+# Ignore the three `built it` rows — the submission beats them everywhere, as it
+# must. The `reference` row is the result:
+#
+# | | vs the human reference |
+# |---|---|
+# | structural validity | **level** (both 100%) |
+# | defect-free | **level** — interval contains zero |
+# | vulnerability-free | **worse**, significantly |
+# | high-severity-free | **worse**, significantly |
+#
+# A frontier model has closed the structural and maintainability gap to human
+# code on these tasks, and has **not** closed the security gap. That is the
+# paper's headline, reproduced from raw code on your laptop in two minutes, and
+# the next three notebooks ask why.
+
+# %% [markdown]
+# ## 8. Did we reproduce the paper?
 #
 # The paper reports, for Python on exactly these 200 tasks:
 #
@@ -201,12 +336,12 @@ display(pd.concat({"paper": paper, "ours": ours.round(1),
           .swaplevel(axis=1).sort_index(axis=1))
 
 # %% [markdown]
-# ## 5. A second cross-check: the study's own frozen results
+# ## 9. A second cross-check: the study's own frozen results
 #
 # `data/frozen/` contains the study's *published* per-task results for the four
 # original authors — computed by the original research pipeline, not by the
-# released evaluator. Comparing them to what we just measured tells us something
-# the paper cannot tell us about itself.
+# released evaluator. Comparing them with what we just measured tells us
+# something the paper cannot tell us about itself.
 
 # %%
 pairs = {"human": "human", "chatgpt": "openai", "dsc": "dsc", "qwen": "qwen"}
@@ -232,9 +367,6 @@ for ours_name, frozen_name in pairs.items():
 display(pd.DataFrame(rows).set_index("author").round(2))
 
 # %% [markdown]
-# Read that table carefully, because it contains the most useful methodological
-# result of the session:
-#
 # * **Structural verdicts: 100% agreement.** Deterministic parsing reproduces.
 # * **Defect counts: 99–100% agreement.** Pinned Pylint + a frozen mapping
 #   reproduces.
@@ -284,7 +416,6 @@ display(pd.Series(matched_text).rename("findings").to_frame())
 # counts move back toward the study's.
 
 # %%
-import subprocess, tempfile, os
 sys.path.insert(0, str(paths.VENDOR))
 from support.rq4_build_table import normalized_cwes
 from cqhandson.runner import _env, _write_corpus
@@ -368,7 +499,7 @@ display(pd.DataFrame(rows).set_index("author"))
 # finding totals run about 25% below the study's, for the reason above.)*
 
 # %% [markdown]
-# ## 6. The picture
+# ## 10. The picture
 
 # %%
 fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
@@ -386,6 +517,9 @@ axes[1].bar(range(len(clean)), clean.values,
 axes[1].set_xticks(range(len(clean)), clean.index, rotation=20, ha="right")
 axes[1].set_title("clean_strict@1 — passed all four layers")
 axes[1].set_ylabel("% of the 200 tasks")
+axes[1].axhline(clean["Human"], color="#008080", ls="--", lw=1.2)
+axes[1].annotate("human reference", (len(clean) - 0.4, clean["Human"] + 0.6),
+                 ha="right", fontsize=8, color="#008080")
 for x, value in enumerate(clean.values):
     axes[1].text(x, value + 0.7, f"{value:.1f}", ha="center", fontsize=9)
 
@@ -394,49 +528,18 @@ fig.savefig(paths.FIGURES / "02_headline.png")
 plt.show()
 
 # %% [markdown]
-# ## 7. Are the differences real?
-#
-# Every author answered the *same* 200 tasks, so comparisons should be
-# **paired**: compare per task, then average the differences. Pairing removes
-# task difficulty from the comparison and gives much tighter intervals than
-# comparing two independent percentages.
-#
-# `paired_bootstrap_ci` resamples tasks 10,000 times with the seeding scheme of
-# `cqbench compare`. An interval that excludes zero means the difference is not
-# explained by which tasks happened to be sampled.
-
-# %%
-for metric in ("clean_strict_at_1", "defect_free_rate",
-               "vulnerability_free_rate", "high_severity_free_rate"):
-    table = compare_authors(results, metric, reference="human")
-    table["author"] = table["author"].map(ch.AUTHOR_LABELS)
-    print(f"\n{metric}  (each author minus Human, paired over 200 tasks)")
-    print(table.round(3).to_string(index=False))
-
-# %% [markdown]
-# The pattern that matters:
-#
-# * **Claude is statistically indistinguishable from the human reference** on
-#   `clean_strict@1` and on defect-freedom — the first model in this comparison
-#   for which that is true.
-# * **It is still significantly worse on security**, both for any vulnerability
-#   finding and for high-severity ones.
-# * The three 2023–24 baselines are significantly worse than the human on
-#   everything.
-#
-# That is the paper's headline, reproduced from raw code on your laptop in two
-# minutes. The next three notebooks ask *why* — RQ1 structure, RQ2 defects,
-# RQ3 security.
-#
 # ---
 # ## Takeaways
 #
-# 1. **Benchmark cost is usually tooling, not analysis.** 97% of the reference
+# 1. **Who built the benchmark decides what its numbers mean.** Three of these
+#    five authors defined the selection; beating them is not a result. The human
+#    reference is the bar.
+# 2. **Benchmark cost is usually tooling, not analysis.** 97% of the reference
 #    evaluator's runtime was process start-up and a network call.
-# 2. **Prove equivalence, don't assert it.** A field-by-field diff against the
-#    reference implementation is cheap and is the only thing that makes a
-#    re-implementation citable.
-# 3. **Incidence reproduces; counts do not.** Choose summaries that survive
+# 3. **Prove equivalence, don't assert it.** A field-by-field diff against the
+#    reference implementation is the only thing that makes a re-implementation
+#    citable.
+# 4. **Incidence reproduces; counts do not.** Choose summaries that survive
 #    reasonable disagreement about de-duplication.
-# 4. **Pair your comparisons.** Same tasks for every author is a design
+# 5. **Pair your comparisons.** The same tasks for every author is a design
 #    advantage; throwing it away in the analysis wastes it.

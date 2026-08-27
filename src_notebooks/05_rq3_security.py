@@ -38,6 +38,15 @@ tasks = ch.load_tasks()
 order = [ch.AUTHOR_LABELS[a] for a in ch.AUTHOR_ORDER]
 
 # %% [markdown]
+# > **Reading the tables in this notebook.** Every per-author table carries a
+# > `role`. ChatGPT, DeepSeek and Qwen **built** this benchmark — a task is here
+# > because at least two of them failed it — so their rates are a ceiling, not a
+# > measurement. The comparison that carries information is **Claude, the model
+# > under test, against the human reference**. The three construction models are
+# > there to give that comparison a scale.
+
+
+# %% [markdown]
 # ## 1. Incidence and severity
 
 # %%

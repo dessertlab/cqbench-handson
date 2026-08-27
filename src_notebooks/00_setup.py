@@ -149,6 +149,36 @@ print("\nconsensus finding burden (the 'difficulty' score):")
 print(difficulty.value_counts().sort_index().to_string())
 
 # %% [markdown]
+# ### And now the part that decides how you read every later number
+#
+# Those gates were computed from **three specific models**. So the five authors
+# you met in section 2 are not five peers — they stand in three different
+# relations to the benchmark:
+
+# %%
+roles = pd.DataFrame({
+    "Author": [ch.AUTHOR_LABELS[a] for a in ch.AUTHOR_ORDER],
+    "Role": [ch.ROLE_LABELS[ch.AUTHOR_ROLES[a]] for a in ch.AUTHOR_ORDER],
+}).set_index("Author")
+display(roles)
+
+# %% [markdown]
+# ChatGPT, DeepSeek and Qwen **defined** the selection: a task is here precisely
+# because at least two of them failed it in a shared way. Their failure rates on
+# this benchmark are inflated by construction — they are a ceiling, not a
+# measurement.
+#
+# The human reference took no part in the consensus gate, and Claude Opus 4.8 was
+# released *after* the benchmark was built. Those two are outside the
+# construction, which is the only reason anything here can be tested.
+#
+# From notebook 02 onward the session treats **Claude as the submission under
+# test** and the other four as baselines. Keep the consequence in view:
+#
+# > Beating the three models that built the benchmark is the weakest possible
+# > result. Reaching the human reference is the one that means something.
+
+# %% [markdown]
 # **What follows from this, and what does not.**
 #
 # ✅ You *can* say: "on tasks where 2023–24 models were known to fail in a shared

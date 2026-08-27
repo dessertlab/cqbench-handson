@@ -8,5 +8,6 @@ env/
 # Results you produce during the session. The shipped fallback in
 # results/precomputed/ is tracked; your own runs are not.
 results/live/*.jsonl
+results/comparison.csv
 figures/*.png
 figures/*.pdf

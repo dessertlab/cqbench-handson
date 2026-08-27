@@ -17,6 +17,11 @@ from .loading import (  # noqa: E402
     AUTHORS,
     AUTHOR_LABELS,
     AUTHOR_ORDER,
+    AUTHOR_ROLES,
+    BASELINES,
+    ROLE_LABELS,
+    ROLE_SHORT,
+    SUBMISSION,
     load_predictions,
     load_references,
     load_results,
@@ -36,7 +41,8 @@ from .viz import PALETTE, AUTHOR_COLORS, style  # noqa: E402
 
 __all__ = [
     "REPO", "VENDOR",
-    "AUTHORS", "AUTHOR_LABELS", "AUTHOR_ORDER",
+    "AUTHORS", "AUTHOR_LABELS", "AUTHOR_ORDER", "AUTHOR_ROLES",
+    "ROLE_LABELS", "ROLE_SHORT", "SUBMISSION", "BASELINES",
     "load_tasks", "load_references", "load_predictions", "load_results",
     "results_frame", "show_code", "read_jsonl",
     "ODC_COLUMNS", "ODC_LABELS", "headline_table", "paired_bootstrap_ci", "rate",

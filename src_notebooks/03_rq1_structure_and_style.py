@@ -37,6 +37,15 @@ tasks = ch.load_tasks()
 print("source:", paths.results_dir().relative_to(paths.REPO), "|", len(results), "rows")
 
 # %% [markdown]
+# > **Reading the tables in this notebook.** Every per-author table carries a
+# > `role`. ChatGPT, DeepSeek and Qwen **built** this benchmark — a task is here
+# > because at least two of them failed it — so their rates are a ceiling, not a
+# > measurement. The comparison that carries information is **Claude, the model
+# > under test, against the human reference**. The three construction models are
+# > there to give that comparison a scale.
+
+
+# %% [markdown]
 # ## 1. Structural validity: did you answer the question?
 #
 # Before complexity, the mechanical check from notebook 01, now over 200 tasks.

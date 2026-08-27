@@ -21,6 +21,41 @@ AUTHOR_LABELS = {
 AUTHOR_ORDER = ["human", "chatgpt", "dsc", "qwen", "claude"]
 AUTHORS = AUTHOR_ORDER
 
+#: Where each author stands **relative to the benchmark's construction**.
+#:
+#: This is not a cosmetic label. CQBench kept a task only when at least two of
+#: ChatGPT, DeepSeek-Coder and Qwen2.5-Coder produced three or more findings of
+#: a shared class. Those three therefore *defined* the selection: their failure
+#: rates on this benchmark are inflated by construction and cannot be read as
+#: estimates of anything.
+#:
+#: The human reference took no part in the consensus gate (it only had to parse
+#: and be non-trivial), and Claude Opus 4.8 was released after the benchmark was
+#: built. Both are outside the construction, which is exactly what makes a
+#: comparison meaningful: three models set the ceiling, the human sets the
+#: floor, and the model under test is measured between them.
+AUTHOR_ROLES = {
+    "human":   "reference",
+    "chatgpt": "construction",
+    "dsc":     "construction",
+    "qwen":    "construction",
+    "claude":  "under test",
+}
+ROLE_LABELS = {
+    "reference":    "human reference · outside the construction",
+    "construction": "built the benchmark · rates inflated by design",
+    "under test":   "model under test · outside the construction",
+}
+ROLE_SHORT = {
+    "reference":    "reference",
+    "construction": "built it",
+    "under test":   "UNDER TEST",
+}
+#: The author the session treats as the submission.
+SUBMISSION = "claude"
+#: The authors CQBench ships as baselines to compare a submission against.
+BASELINES = ["human", "chatgpt", "dsc", "qwen"]
+
 
 def read_jsonl(path: str | Path) -> list[dict]:
     with open(path, encoding="utf-8") as handle:
@@ -66,6 +101,7 @@ def results_frame(
     frame = pd.concat(frames, ignore_index=True)
     frame["author"] = pd.Categorical(frame["author"], categories=list(authors), ordered=True)
     frame["author_label"] = frame["author"].map(AUTHOR_LABELS).astype(str)
+    frame["role"] = frame["author"].map(AUTHOR_ROLES).astype(str)
     frame["defective"] = frame["defects_total"] > 0
     frame["vulnerable"] = frame["vulns_total"] > 0
     frame["high_severity"] = frame["vulns_high_sev"] > 0
