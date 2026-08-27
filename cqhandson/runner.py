@@ -90,7 +90,18 @@ def check_analyzers() -> dict[str, str]:
                 f"{tool} is not on PATH. Activate the conda environment: "
                 f"`conda activate cqbench-handson`."
             ) from exc
-        found[tool] = (out.stdout or out.stderr).strip().splitlines()[0]
+        # An installed-but-broken analyzer exits non-zero and prints a traceback.
+        # Reporting its first stderr line as a "version" hides the real failure
+        # until it resurfaces, far less legibly, in the middle of a scan.
+        text = (out.stdout or out.stderr).strip()
+        first = text.splitlines()[0] if text else ""
+        if out.returncode != 0 or not any(char.isdigit() for char in first):
+            raise RuntimeError(
+                f"{tool} is installed but fails to run (`{tool} --version` exited "
+                f"{out.returncode}). Its own error was:\n\n"
+                + "\n".join(text.splitlines()[-6:])
+            )
+        found[tool] = first
     return found
 
 

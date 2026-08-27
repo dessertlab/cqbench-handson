@@ -93,6 +93,16 @@ def main() -> int:
               "a different version changes the vulnerability counts", fatal=False)
     except RuntimeError as exc:
         check("analyzers on PATH", False, str(exc))
+        if "pkg_resources" in str(exc):
+            print("\n" + "-" * 52)
+            print("This one has a known cause and a one-line fix:\n")
+            print(f"    {Path(sys.executable).name} -m pip install \"setuptools<82\"")
+            print("\nsemgrep reaches pkg_resources through opentelemetry. "
+                  "pkg_resources\nships inside setuptools, which conda does not "
+                  "install by default, and\nwhich removed pkg_resources in "
+                  "version 82 -- so plain `pip install\nsetuptools` does not fix "
+                  "it. The pin is what matters.")
+            print("-" * 52)
 
     for label, path in [
         ("tasks.jsonl", paths.TASKS),

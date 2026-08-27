@@ -25,6 +25,12 @@ dependencies:
       - numpy>=1.24,<3
       - scipy>=1.10,<2
       - matplotlib>=3.7,<4
+      # semgrep -> opentelemetry-instrumentation -> pkg_resources, which lives
+      # in setuptools. conda does not install setuptools by default (a venv
+      # does, which is why this is easy to miss), and setuptools 82 removed
+      # pkg_resources -- so a bare `setuptools` does not fix it either.
+      # Present up to 81.0.0, gone in 82.0.0.
+      - setuptools<82
       # --- CQBench evaluator dependencies (pins from the study) -----------
       - lizard==1.17.25          # function extraction, NLOC, CCN, Halstead
       - tqdm>=4.65,<5            # progress bars inside the vendored study modules
