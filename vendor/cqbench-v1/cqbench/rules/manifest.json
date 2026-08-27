@@ -1,0 +1,24 @@
+{
+  "duplicate_rule_ids": 1021,
+  "packs": [
+    "p/trailofbits",
+    "p/default",
+    "p/comment",
+    "p/python",
+    "p/java",
+    "p/c",
+    "p/cwe-top-25",
+    "p/owasp-top-ten",
+    "p/r2c-security-audit",
+    "p/insecure-transport",
+    "p/secrets",
+    "p/findsecbugs",
+    "p/gitlab",
+    "p/mobsfscan",
+    "p/command-injection",
+    "p/sql-injection"
+  ],
+  "rule_count": 1847,
+  "semgrep_version": "1.120.0",
+  "sha256": "a82402fbb807515e8158accf9e52dd70f7a377bc4f307b8d83a7bb557714a601"
+}

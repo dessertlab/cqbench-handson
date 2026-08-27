@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+.venv/
+env/
+
+# Results you produce during the session. The shipped fallback in
+# results/precomputed/ is tracked; your own runs are not.
+results/live/*.jsonl
+figures/*.png
+figures/*.pdf

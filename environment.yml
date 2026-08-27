@@ -1,0 +1,36 @@
+# CQBench hands-on environment.
+#
+#   conda env create -f environment.yml
+#   conda activate cqbench-handson
+#   python setup/verify_setup.py
+#
+# Everything except the interpreter comes from pip: the two analyzers the
+# benchmark depends on (pylint, semgrep) are pinned to the exact versions the
+# study used, and those pins are only available on PyPI. Changing either version
+# changes the measurements.
+name: cqbench-handson
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip>=24
+  - pip:
+      # --- notebook environment -------------------------------------------
+      - jupyterlab>=4.2,<5
+      - ipywidgets>=8,<9
+      # --- analysis -------------------------------------------------------
+      - pandas>=2.0,<3
+      - numpy>=1.24,<3
+      - scipy>=1.10,<2
+      - matplotlib>=3.7,<4
+      # --- CQBench evaluator dependencies (pins from the study) -----------
+      - lizard==1.17.25          # function extraction, NLOC, CCN, Halstead
+      - tree-sitter==0.23.2
+      - tree-sitter-language-pack>=0.7,<1
+      - openpyxl==3.1.5          # reads the Pylint -> ODC mapping workbook
+      - pyarrow>=15              # imported by the vendored study modules
+      # --- the two analyzers: DO NOT change these versions ----------------
+      - pylint==3.3.6            # defects  -> ODC categories
+      - semgrep==1.120.0         # vulnerabilities -> CWE classes
