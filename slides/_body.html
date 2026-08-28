@@ -428,21 +428,23 @@
     <div class="body">
       <span class="eyebrow">Read this before you read any result</span>
       <h2>These tasks were kept <em>because</em> models failed them.</h2>
-      <p>Out of ~256,000 Python candidates, a task survives only if two models produced substantial
-        answers, each with ≥3 findings, <strong>sharing a defect type or weakness class</strong>.
-        Not hard tasks — tasks where independent models fail the <em>same way</em>.</p>
+      <p>Out of ~256,000 Python candidates, a task survives only if two models cleared a
+        10% complexity floor, each produced ≥3 findings, and those findings
+        <strong>shared a defect type or weakness class</strong>. Not hard tasks — tasks
+        where independent models fail the <em>same way</em>.</p>
       <div class="cols">
         <div class="card">
           <span class="label">You can say</span>
-          <p style="color:var(--ink)">“On tasks where 2023–24 models were known to fail alike, model X still fails on Y%.”</p>
+          <p style="color:var(--ink)">“On tasks where 2023–24 models failed alike, model X still fails on Y%.”</p>
         </div>
         <div class="card">
           <span class="label">You cannot say</span>
           <p style="color:var(--ink)">“Model X writes defective code Y% of the time.”</p>
         </div>
       </div>
-      <p class="quote">The human references — code that shipped — trip a defect on <b>62%</b> of these
-        tasks. That is a fact about the sampling frame, not about human programmers.</p>
+      <p class="quote">The human references trip a defect on <b>62%</b> of these tasks, and
+        clear the structural gate on <b>100%</b> — an entry requirement. Facts about the
+        sampling frame, not about programmers.</p>
     </div>
   </section>
 

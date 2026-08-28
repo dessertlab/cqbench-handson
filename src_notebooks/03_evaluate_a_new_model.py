@@ -92,7 +92,12 @@ figures.plot_validity(results);
 # composite metric collapses, look here first: **you may be measuring
 # instruction-following, not code quality.**
 #
-# Claude and the human reference clear this gate on all 200.
+# Claude clears this gate on all 200 — and so does the human reference, but for
+# a different reason. **The human's 100% is guaranteed by construction**: a task
+# only entered CQBench if its human implementation parses, exposes the requested
+# signature, and is structurally non-trivial. That bar is an entry requirement
+# for the task, not a measurement of the author. Claude's 100% is a result; the
+# human's is a tautology. Any chart that shows both has to be read that way.
 
 # %% [markdown]
 # ## Step 4 — the scoreboard

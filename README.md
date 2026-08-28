@@ -24,9 +24,17 @@ No code is generated during the session: every submission already exists in
 important thing in this repository.**
 
 CQBench kept a task only when at least two of ChatGPT, DeepSeek-Coder and
-Qwen2.5-Coder produced three or more findings of a shared class. Those three
-*defined* the selection: their failure rates here are inflated by construction
-and are not estimates of anything. They are a ceiling.
+Qwen2.5-Coder produced three or more findings — defects and security findings
+counted together — of a shared class, having first cleared a 10% complexity
+floor against the human implementation. Those three *defined* the selection:
+their failure rates here are inflated by construction and are not estimates of
+anything. They are a ceiling.
+
+A fourth condition matters when reading charts: **the human implementation had
+to parse, expose the requested signature, and be structurally non-trivial** for
+the task to be included at all. So the human reference clears the structural
+gate on 100% of tasks by construction. That is an entry requirement, not a
+result.
 
 The other two took no part in it. The human reference only had to parse and be
 non-trivial — its findings never entered the consensus gate. Claude Opus 4.8 was

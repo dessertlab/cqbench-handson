@@ -127,17 +127,27 @@ print("\ncomplexity reference:", reference["human_complexity"])
 #
 # CQBench is a **failure-derived challenge set**. Tasks were not sampled at
 # random from a corpus of programming problems. Out of ~256,000 candidate Python
-# tasks, one was kept only if:
+# tasks, one was kept only if all of the following held:
 #
-# 1. at least **two** of the three original models produced a
-#    complexity-qualified answer (not empty, not a stub), **and**
-# 2. each of those two answers had **≥ 3 analyzer findings**, **and**
-# 3. those findings **shared a class** — the same ODC defect type, or the same
-#    normalized CWE.
+# 1. a model answer counts at all only if it is **complexity-qualified** — its
+#    mean lines of code *or* its mean Halstead volume reaches 10% of the human
+#    implementation's, so empty and stub answers are excluded; **and**
+# 2. at least **two** complexity-qualified models each produced **≥ 3 findings**
+#    — defects and security findings **counted together**; **and**
+# 3. those same two models **shared a class** — the same ODC defect type, or the
+#    same normalized CWE; **and**
+# 4. the **human implementation itself** parses, exposes the requested
+#    signature, and is structurally non-trivial; **and**
+# 5. the task is not an exact duplicate of one already kept.
 #
-# That third condition is the interesting one. It does not select *hard* tasks;
-# it selects tasks where independent models **fail in the same way**. The
-# resulting strata are named after which gate fired:
+# Condition 3 is the interesting one. It does not select *hard* tasks; it selects
+# tasks where independent models **fail in the same way**.
+#
+# Condition 4 is the one to remember when you read a chart. It means the human
+# reference passes the structural gate on **100% of tasks by construction** —
+# that is an entry requirement, not a measurement. Never quote it as a finding.
+#
+# The strata are named after which of the two consensus gates fired:
 
 # %%
 strata = pd.Series([t["stratum"] for t in tasks.values()]).value_counts()
