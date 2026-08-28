@@ -27,6 +27,7 @@ from .loading import (  # noqa: E402
     load_results,
     load_tasks,
     read_jsonl,
+    results_source,
     results_frame,
     show_code,
 )
@@ -37,14 +38,22 @@ from .metrics import (  # noqa: E402
     paired_bootstrap_ci,
     rate,
 )
-from .viz import PALETTE, AUTHOR_COLORS, style  # noqa: E402
+from .viz import (  # noqa: E402
+    AUTHOR_COLORS,
+    PALETTE,
+    ROLE_COLORS,
+    author_color,
+    style,
+)
+from . import figures, reproduce, whatif  # noqa: E402,F401
 
 __all__ = [
     "REPO", "VENDOR",
     "AUTHORS", "AUTHOR_LABELS", "AUTHOR_ORDER", "AUTHOR_ROLES",
     "ROLE_LABELS", "ROLE_SHORT", "SUBMISSION", "BASELINES",
     "load_tasks", "load_references", "load_predictions", "load_results",
-    "results_frame", "show_code", "read_jsonl",
+    "results_frame", "show_code", "read_jsonl", "results_source",
     "ODC_COLUMNS", "ODC_LABELS", "headline_table", "paired_bootstrap_ci", "rate",
-    "PALETTE", "AUTHOR_COLORS", "style",
+    "PALETTE", "AUTHOR_COLORS", "ROLE_COLORS", "author_color", "style",
+    "figures", "reproduce", "whatif",
 ]

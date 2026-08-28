@@ -47,20 +47,24 @@ table prints it.
 
 ## What you will actually do
 
+Two acts. First we reproduce the published research and check our machine
+against it; then we submit a model the benchmark has never seen.
+
 | # | Notebook | Time | What happens |
 |---|---|---|---|
-| 00 | `00_setup.ipynb` | 15 min | Check the environment, meet the data, read one task and its five answers |
-| 01 | `01_measurement_pipeline.ipynb` | 35 min | Run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
-| 02 | `02_run_the_benchmark.ipynb` | 30 min | The real CQBench flow — **validate → evaluate → compare** — with Claude as the submission; verify the fast runner against the reference evaluator; reproduce Table 5 of the paper |
-| 03 | `03_rq1_structure_and_style.ipynb` | 35 min | **RQ1** — do models write structurally different code? NLOC, cyclomatic complexity, Halstead, maintainability, lexical diversity |
-| 04 | `04_rq2_defects.ipynb` | 30 min | **RQ2** — defect types and frequencies, mapped to Orthogonal Defect Classification |
-| 05 | `05_rq3_security.ipynb` | 30 min | **RQ3** — vulnerability classes and severity, mapped to CWE |
+| 00 | `00_setup.ipynb` | 15 min | Check the environment, read one task and its five answers, and see why *these* 200 tasks are in the benchmark |
+| 01 | `01_measurement_pipeline.ipynb` | 35 min | What the four tools do, then run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
+| 02 | `02_reproduce_the_study.ipynb` | 30 min | **Act I** — score the four authors the study measured, verify our tooling against the reference evaluator, and diff our per-task results against the study's published ones |
+| 03 | `03_evaluate_a_new_model.ipynb` | 30 min | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots |
+| 04 | `04_where_the_differences_are.ipynb` | 45 min | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move three measurement decisions and see which conclusions survive |
 
-`slides/index.html` is a 14-slide opening deck (10–15 min) to project before
-anyone opens a notebook. See `slides/README.md` for the controls.
+Almost every cell is a single call that draws a chart; the plumbing lives in
+`cqhandson/figures.py`, which is short and meant to be opened. The exception is
+notebook 01, where the code *is* the lesson: you run the analyzers yourself.
 
-Notebooks 00–02 are fully worked: run them and read. Notebooks 03–05 mix worked
-analysis with `TODO` exercises; worked solutions are in `notebooks/solutions/`.
+The exercises are in notebook 04 and are one-line changes with a visual answer —
+move the complexity floor, drop a group of linter checks, remove a security rule.
+Worked answers in `notebooks/solutions/`.
 
 ---
 
@@ -182,6 +186,12 @@ participants find them rather than being told:
 - **A composite metric can collapse for the wrong reason.** ChatGPT's
   `clean_strict@1` of 0.5% is mostly an *instruction-following* failure: on 86.5%
   of tasks it wrote a function with a different name. Decompose before ranking.
+- **Verbosity and compression are the same behaviour.** Models write two to
+  three times more than the human on short functions and roughly half as much on
+  long ones. Two findings usually reported as contradictory are one finding
+  measured on different task mixes.
+- **Control for volume before claiming anything about vocabulary.** DeepSeek's
+  38% apparent vocabulary deficit vanishes at matched volume; Qwen's does not.
 - **Not every counted defect was authored.** `too-many-arguments` fires
   identically for the human and Claude — both inherit it from the requested
   signature. `unused-argument` is inflated for everyone because methods are

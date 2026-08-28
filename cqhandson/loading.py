@@ -79,8 +79,25 @@ def load_predictions(author: str, directory: str | Path | None = None) -> dict[s
 
 
 def load_results(author: str, directory: str | Path | None = None) -> list[dict]:
-    directory = Path(directory) if directory is not None else paths.results_dir()
-    return read_jsonl(Path(directory) / f"{author}.jsonl")
+    """One author's per-task results.
+
+    Resolved **per author**, not per directory: whatever you scored yourself is
+    used, and anything you did not score falls back to the shipped results. So a
+    notebook that evaluates only some authors still finds the rest, and a
+    student whose run failed halfway is never stuck.
+    """
+    if directory is not None:
+        return read_jsonl(Path(directory) / f"{author}.jsonl")
+    live = paths.LIVE / f"{author}.jsonl"
+    return read_jsonl(live if live.exists() else paths.PRECOMPUTED / f"{author}.jsonl")
+
+
+def results_source(authors: Iterable[str] = AUTHOR_ORDER) -> pd.Series:
+    """Where each author's numbers came from — your run, or the shipped file."""
+    return pd.Series(
+        {AUTHOR_LABELS[a]: ("your run" if (paths.LIVE / f"{a}.jsonl").exists()
+                            else "shipped fallback") for a in authors},
+        name="source")
 
 
 def results_frame(

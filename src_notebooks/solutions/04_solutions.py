@@ -1,0 +1,176 @@
+# %% [markdown]
+# # 04 — Exercises, worked
+#
+# Run `04_where_the_differences_are.ipynb` first. This notebook holds the
+# answers and, more importantly, what each one is evidence *for*.
+
+# %%
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path.cwd().parents[1]))
+
+import pandas as pd
+import cqhandson as ch
+from cqhandson import figures, whatif
+from cqhandson.metrics import ODC_COLUMNS, ODC_LABELS, compare_submission
+
+ch.style()
+pd.set_option("display.width", 200)
+
+results = ch.results_frame()
+order = [ch.AUTHOR_LABELS[a] for a in ch.AUTHOR_ORDER]
+
+# %% [markdown]
+# ## Exercise 1 — where should the "too small to count" floor be?
+
+# %%
+clean = pd.DataFrame({
+    f"gate {g:.2f}": 100 * whatif.with_complexity_gate(results, g)
+        .groupby("author_label", observed=True)["clean_strict"].mean().reindex(order)
+    for g in (0.02, 0.10, 0.30, 0.50)})
+display(clean.round(1))
+
+disqualified = pd.DataFrame({
+    f"gate {g:.2f}": whatif.with_complexity_gate(results, g)
+        .query("status == 'complexity_degenerate'")
+        .groupby("author_label", observed=True).size().reindex(order).fillna(0).astype(int)
+    for g in (0.10, 0.30, 0.50)})
+print("answers disqualified as too small:")
+display(disqualified)
+
+# %% [markdown]
+# **Answer — the gate is far less powerful than it looks, and for a good reason.**
+#
+# At the shipped 0.10, **nobody is disqualified**. That is not a coincidence: the
+# benchmark's own construction already required the models to be
+# complexity-qualified, so the tasks that survived selection are tasks where the
+# models wrote something substantial.
+#
+# Raise it and the disqualifications appear, very unevenly:
+#
+# | | gate 0.30 | gate 0.50 |
+# |---|---:|---:|
+# | Human | 0 | 0 |
+# | DeepSeek-Coder | 26 | 49 |
+# | Qwen2.5-Coder | 11 | 36 |
+# | Claude Opus 4.8 | 5 | 16 |
+#
+# The human is at 0 by construction — it *is* the denominator, so its ratio is
+# always 1.0. DeepSeek is hit ten times harder than Claude, which is the same
+# compression you saw in RQ1, now expressed as a pass/fail.
+#
+# **But look at the clean rates.** Claude goes 27.5 → 26.5 → 24.5. Almost
+# nothing. Why? Because an answer small enough to be disqualified had usually
+# already failed for another reason — it carried a defect or a finding. The gate
+# and the analyzers are catching **the same bad answers twice**.
+#
+# The lesson generalises: when you add a filter to a composite metric, measure
+# how much of it is *new* rejection rather than assuming it earns its place. This
+# one is doing much less work than its prominence in the paper suggests.
+
+# %% [markdown]
+# ## Exercise 2 — which findings did the author actually cause?
+
+# %%
+def odc(frame):
+    return pd.DataFrame({
+        ODC_LABELS[c]: 100 * frame.groupby("author_label", observed=True)[c]
+                              .apply(lambda s: (s > 0).mean())
+        for c in ODC_COLUMNS}).reindex(order)
+
+deartifacted = whatif.without_symbols(results)
+before, after = odc(results), odc(deartifacted)
+display(pd.concat({"official": before.round(1), "de-artifacted": after.round(1)}, axis=1)
+          .swaplevel(axis=1).sort_index(axis=1))
+
+print("\ndefect incidence:")
+display(pd.DataFrame({
+    "official": 100 * results.groupby("author_label", observed=True)["defective"].mean(),
+    "de-artifacted": 100 * deartifacted.groupby("author_label", observed=True)["defective"].mean(),
+}).reindex(order).round(1))
+
+# %% [markdown]
+# **Answer — most of the ODC profile was the format talking, and one column
+# was not.**
+#
+# Removing four checks changes almost every column dramatically:
+#
+# * **Assignment** collapses for everyone — DeepSeek 54.5 → 13.5, Qwen 62 → 19,
+#   human 25.5 → 15.5. That column was largely `unused-argument`, and
+#   `unused-argument` fires partly because methods are scored outside their
+#   class, so `self` is never used.
+# * **Interface** halves for the human (31.5 → 12.0), because
+#   `too-many-arguments` maps there — and that check fires on the **requested
+#   signature**, which the human wrote in the first place.
+# * **Function/Class/Object** for DeepSeek falls 25.5 → 8.0, confirming the
+#   synthetic class wrapper was most of it, though not all.
+#
+# **Now look at Checking. It does not move at all** — 16.0 / 32.5 / 39.5 / 27.0 /
+# 19.5, identical before and after, because none of the four artifacts map
+# there. It is a clean control column, and it says:
+#
+# > Models produce missing-validation and missing-guard defects **twice as often
+# > as the human reference**, and that finding survives every filter we can
+# > think to apply.
+#
+# That is the sentence to take out of RQ2. The others need a caveat; this one
+# does not.
+#
+# **The methodological point.** A defensible change to an exclusion list moved
+# every absolute rate by a third to a half. It moved the *ordering between
+# authors* very little. Design your benchmark so your claims live in the
+# comparisons, not the levels.
+
+# %% [markdown]
+# ## Exercise 3 — is the security gap carried by one rule?
+
+# %%
+filtered = whatif.without_rules(results, ("B404",))
+display(pd.DataFrame({
+    "vulnerable %, official": 100 * results.groupby("author_label", observed=True)["vulnerable"].mean(),
+    "vulnerable %, no B404": 100 * filtered.groupby("author_label", observed=True)["vulnerable"].mean(),
+}).reindex(order).round(1))
+
+for metric, title in [("vulnerability_free_rate", "Free of security findings — B404 removed"),
+                      ("high_severity_free_rate", "Free of high-severity findings — B404 removed")]:
+    display(compare_submission(filtered, metric).round(3))
+    figures.plot_forest(compare_submission(filtered, metric), title, save=None)
+
+# %% [markdown]
+# **Answer — and this is the most consequential result in the session.**
+#
+# **(1) Removing `B404` moves the levels a lot, and only for the models.**
+#
+# | | official | without `B404` |
+# |---|---:|---:|
+# | Human | 15.5 | 15.0 |
+# | ChatGPT | 48.5 | 38.0 |
+# | DeepSeek-Coder | 54.0 | 42.0 |
+# | Qwen2.5-Coder | 41.5 | 33.0 |
+# | Claude Opus 4.8 | **28.0** | **19.0** |
+#
+# The human barely moves — one task. Every model drops 8–12 points, because
+# models import `subprocess` far more often than humans do.
+#
+# **(2) It changes a conclusion.** On overall vulnerability incidence the
+# submission's gap against the human reference becomes **−0.04 with an interval
+# of [−0.10, +0.02] — it crosses zero.** Notebook 03's statement that the
+# submission is significantly worse than the human on security was **carried by
+# a single rule that matches an import statement.**
+#
+# **(3) But not the other conclusion.** On **high severity** the gap survives:
+# **−0.06, interval [−0.095, −0.025]**, still clear of zero. Those findings are
+# `B410` (unsafe XML parsing) and `B602` (`shell=True`) — rules that require
+# actual misuse, not an import.
+#
+# **What you are allowed to say afterwards** is narrower than the paper's Python
+# row, and sharper:
+#
+# > The frontier model's residual security gap against human code is in
+# > **high-severity** patterns — unsafe XML parsing and shell execution — not in
+# > overall finding incidence, which is not distinguishable from the human
+# > reference once a permissive import-level rule is removed.
+#
+# You got a better claim by trying to break the original one. That is the
+# transferable skill from today: **the last step of an evaluation is attacking
+# your own headline**, and a benchmark worth using is one that survives it in a
+# more precise form.

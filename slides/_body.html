@@ -335,9 +335,66 @@
     </div>
   </section>
 
-  <!-- 8 -->
+  <!-- what the analyzers find -->
   <section class="slide" data-sect="Pipeline">
     <div class="gutter"><span class="idx">08</span><span class="sect">Pipeline</span></div>
+    <div class="body">
+      <span class="eyebrow">The instruments</span>
+      <h2>Two tools, two different questions.</h2>
+      <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(270px,1fr))">
+        <div class="card">
+          <h3><span class="mono">pylint</span> — a linter</h3>
+          <p>Reads Python without running it. Reports what is wrong, suspicious,
+            or unmaintainable.</p>
+          <ul style="gap:.35rem;font-size:.86em">
+            <li><span class="mono">unspecified-encoding</span> — a file opened
+              without an encoding; breaks on someone else's machine</li>
+            <li><span class="mono">missing-timeout</span> — an HTTP call that can
+              hang forever</li>
+            <li><span class="mono">unused-variable</span> — a value computed and
+              never read</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="mono">semgrep</span> — a SAST tool</h3>
+          <p>Matches code against rules describing <em>shapes</em> that create
+            risk.</p>
+          <ul style="gap:.35rem;font-size:.86em">
+            <li><span class="mono">B602</span> — a shell command built with
+              <span class="mono">shell=True</span></li>
+            <li><span class="mono">B410</span> — XML parsed by a library that
+              resolves external entities</li>
+            <li><span class="mono">B113</span> — a request with no timeout</li>
+          </ul>
+        </div>
+      </div>
+      <p><strong>Not one of these fails a test suite.</strong> That is the entire
+        argument for measuring code this way — and also the reason to be careful:
+        semgrep reports a pattern, never a proven exploit.</p>
+    </div>
+  </section>
+
+  <!-- taxonomies -->
+  <section class="slide" data-sect="Pipeline">
+    <div class="gutter"><span class="idx">09</span><span class="sect">Pipeline</span></div>
+    <div class="body">
+      <span class="eyebrow">The part everyone skips</span>
+      <h2 class="wide">A count of linter warnings is not a scientific quantity.</h2>
+      <p>It depends on which checks that tool implements this year, and cannot be
+        compared with a Java or C analyzer. So findings are translated first.</p>
+      <div class="layers">
+        <div class="layer"><span class="n">ODC</span><span class="t">Orthogonal Defect Classification — classifies a defect by <em>the kind of fix it needs</em>: Assignment · Checking · Algorithm · Interface · Function/Class/Object · Timing</span><span class="tool">IBM, 1992</span></div>
+        <div class="layer"><span class="n">CWE</span><span class="t">Common Weakness Enumeration — the industry catalogue of weakness types: CWE-78 command injection, CWE-611 XXE, CWE-400 resource exhaustion</span><span class="tool">MITRE</span></div>
+      </div>
+      <p class="quote">The mappings do double duty: they translate, <strong>and they
+        filter</strong>. A finding with no category is not counted at all — so the
+        spreadsheet defining them is part of the benchmark.</p>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section class="slide" data-sect="Pipeline">
+    <div class="gutter"><span class="idx">10</span><span class="sect">Pipeline</span></div>
     <div class="body">
       <span class="eyebrow">Anatomy of a finding</span>
       <h2 class="wide">This is the atom the whole benchmark is built from.</h2>
@@ -367,7 +424,7 @@
 
   <!-- 9 -->
   <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">09</span><span class="sect">Sampling</span></div>
+    <div class="gutter"><span class="idx">11</span><span class="sect">Sampling</span></div>
     <div class="body">
       <span class="eyebrow">Read this before you read any result</span>
       <h2>These tasks were kept <em>because</em> models failed them.</h2>
@@ -391,7 +448,7 @@
 
   <!-- the asymmetry -->
   <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">10</span><span class="sect">Sampling</span></div>
+    <div class="gutter"><span class="idx">12</span><span class="sect">Sampling</span></div>
     <div class="body">
       <span class="eyebrow">The asymmetry that makes it testable</span>
       <h2 class="wide">Three of the five authors <em>defined</em> this benchmark.</h2>
@@ -409,7 +466,7 @@
 
   <!-- 11 -->
   <section class="slide" data-sect="Cast">
-    <div class="gutter"><span class="idx">11</span><span class="sect">Cast</span></div>
+    <div class="gutter"><span class="idx">13</span><span class="sect">Cast</span></div>
     <div class="body">
       <span class="eyebrow">The cast</span>
       <h2>Five authors, the same 200 Python tasks.</h2>
@@ -430,7 +487,7 @@
 
   <!-- the flow -->
   <section class="slide" data-sect="Flow">
-    <div class="gutter"><span class="idx">12</span><span class="sect">Flow</span></div>
+    <div class="gutter"><span class="idx">14</span><span class="sect">Flow</span></div>
     <div class="body">
       <span class="eyebrow">What you will actually run</span>
       <h2>Validate. Evaluate. Compare.</h2>
@@ -448,28 +505,28 @@
 
   <!-- 13 -->
   <section class="slide" data-sect="Today">
-    <div class="gutter"><span class="idx">13</span><span class="sect">Today</span></div>
+    <div class="gutter"><span class="idx">15</span><span class="sect">Today</span></div>
     <div class="body">
       <span class="eyebrow">The plan</span>
-      <h2>Six notebooks.</h2>
+      <h2>Five notebooks, two acts.</h2>
       <table>
         <tbody>
           <tr><td class="mono">00</td><td>Setup · one task, five answers, and why these tasks</td><td class="n">15′</td></tr>
           <tr><td class="mono">01</td><td>Run the analyzers by hand · a raw message becomes a number</td><td class="n">35′</td></tr>
-          <tr><td class="mono">02</td><td>Score 1,000 submissions · verify the tooling · reproduce a published table</td><td class="n">30′</td></tr>
-          <tr><td class="mono">03</td><td><b>RQ1</b> · structure and style</td><td class="n">35′</td></tr>
-          <tr><td class="mono">04</td><td><b>RQ2</b> · defects, by ODC type</td><td class="n">30′</td></tr>
-          <tr><td class="mono">05</td><td><b>RQ3</b> · vulnerabilities, by CWE class and severity</td><td class="n">30′</td></tr>
+          <tr><td class="mono">02</td><td><b>Act I</b> · reproduce the study, and check it against the published results</td><td class="n">30′</td></tr>
+          <tr><td class="mono">03</td><td><b>Act II</b> · submit a model the benchmark has never seen</td><td class="n">30′</td></tr>
+          <tr><td class="mono">04</td><td>Where the differences are · RQ1, RQ2, RQ3 — and three decisions to change</td><td class="n">45′</td></tr>
         </tbody>
       </table>
-      <p>00–02 are worked; you run and read. 03–05 have exercises where you write the analysis and
-        argue about the result.</p>
+      <p>Almost every cell is one line and draws a chart. The work you do is in
+        notebook 04, where you move a measurement decision and watch which
+        conclusions survive.</p>
     </div>
   </section>
 
   <!-- 12 -->
   <section class="slide" data-sect="Today">
-    <div class="gutter"><span class="idx">14</span><span class="sect">Today</span></div>
+    <div class="gutter"><span class="idx">16</span><span class="sect">Today</span></div>
     <div class="body">
       <span class="eyebrow">The three questions</span>
       <h2>What we're actually asking.</h2>
@@ -486,7 +543,7 @@
 
   <!-- 13 -->
   <section class="slide" data-sect="Point">
-    <div class="gutter"><span class="idx">15</span><span class="sect">Point</span></div>
+    <div class="gutter"><span class="idx">17</span><span class="sect">Point</span></div>
     <div class="body">
       <span class="eyebrow">What you're really practising</span>
       <h2 class="wide">Anyone can run a benchmark. The skill is knowing which of its numbers you would defend.</h2>
@@ -503,7 +560,7 @@
 
   <!-- 14 -->
   <section class="slide" data-sect="Go">
-    <div class="gutter"><span class="idx">16</span><span class="sect">Go</span></div>
+    <div class="gutter"><span class="idx">18</span><span class="sect">Go</span></div>
     <div class="body">
       <span class="eyebrow">Let's go</span>
       <h2>Open a terminal.</h2>
@@ -522,7 +579,7 @@
 <div class="rail"><i id="rail"></i></div>
 <nav class="nav" aria-label="Slide navigation">
   <button id="prev" aria-label="Previous slide">‹</button>
-  <span class="count"><span id="cur">1</span>/<span id="tot">16</span></span>
+  <span class="count"><span id="cur">1</span>/<span id="tot">18</span></span>
   <button id="next" aria-label="Next slide">›</button>
 </nav>
 

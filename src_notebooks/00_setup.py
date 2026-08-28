@@ -172,8 +172,8 @@ display(roles)
 # released *after* the benchmark was built. Those two are outside the
 # construction, which is the only reason anything here can be tested.
 #
-# From notebook 02 onward the session treats **Claude as the submission under
-# test** and the other four as baselines. Keep the consequence in view:
+# Notebook 02 reproduces the study with the four authors it measured; notebook 03
+# then submits **Claude as a model under test**. Keep the consequence in view:
 #
 # > Beating the three models that built the benchmark is the weakest possible
 # > result. Reaching the human reference is the one that means something.
@@ -230,5 +230,5 @@ for author in ch.AUTHOR_ORDER:
 # 3. **CQBench is failure-derived.** Its rates describe robustness on known
 #    issue-prone tasks. They are not population estimates.
 #
-# Next: `01_measurement_pipeline.ipynb` — how a raw analyzer message becomes a
-# number in a table.
+# Next: `01_measurement_pipeline.ipynb` — what the four tools do, and how a raw
+# analyzer message becomes a number in a table.

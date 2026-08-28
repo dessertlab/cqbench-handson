@@ -21,6 +21,58 @@
 # signature **and** non-stub **and** non-degenerate **and** zero defects **and**
 # zero vulnerabilities. Every layer can veto.
 
+# %% [markdown]
+# ## The four tools, and what each is for
+#
+# Before running anything, know what the instruments do — and what they cannot do.
+#
+# ### `lizard` — measures shape
+# Parses a function and reports its size and control flow: lines of code,
+# **cyclomatic complexity** (how many independent paths through the function, so
+# roughly how many tests it would take to cover), nesting depth, and the
+# **Halstead** family (volume ≈ how much information the code carries,
+# difficulty ≈ how much effort it takes to read). It judges nothing. It is used
+# here for one job: deciding whether a generated answer is substantial enough to
+# be worth analysing at all.
+#
+# ### `pylint` — finds defects
+# A linter. It reads Python without running it and reports things that are
+# wrong, suspicious, or unmaintainable: a variable assigned and never used, a
+# file opened without an encoding, an HTTP call with no timeout, a function with
+# too many parameters. **None of these fail a test suite.** They are the class of
+# problem that surfaces later — on someone else's machine, under load, during a
+# review.
+#
+# ### `semgrep` — finds security patterns
+# A static application security testing tool. It matches code against rules that
+# describe *shapes* known to create risk: building a shell command from a
+# variable, parsing XML with a library that resolves external entities, an HTTP
+# call over plain http. It reports a **pattern**, not a proven exploit. Nothing
+# is executed and nothing is shown to be reachable by an attacker.
+#
+# ### ODC and CWE — the translation layer
+# This is the part people skip, and it is the reason the benchmark works at all.
+#
+# A count of Pylint warnings is not a scientific quantity: it depends entirely on
+# which checks Pylint happens to implement this year, and it cannot be compared
+# with a count of PMD warnings in Java or Clang-Tidy warnings in C. So every
+# finding is mapped into a taxonomy:
+#
+# * **ODC** — *Orthogonal Defect Classification*, IBM, 1992. Classifies a defect
+#   by the **kind of fix** it needs: `Assignment` (a wrong value), `Checking` (a
+#   missing guard or validation), `Algorithm` (wrong logic in a right
+#   structure), `Interface` (wrong interaction with callers),
+#   `Function/Class/Object` (the unit itself is structured wrongly),
+#   `Timing/Serialization` (ordering, concurrency, resource lifetime).
+# * **CWE** — *Common Weakness Enumeration*, the industry catalogue of software
+#   weakness types. CWE-78 is OS command injection, CWE-611 is XML external
+#   entity, CWE-400 is uncontrolled resource consumption.
+#
+# Both mappings do double duty: they translate, **and they filter**. A Pylint
+# symbol with no ODC category is not counted as a defect; a Semgrep finding with
+# no CWE metadata is not counted as a vulnerability. Someone decided which is
+# which, and you are about to see the spreadsheet where they wrote it down.
+
 # %%
 import sys, pathlib, json, subprocess, tempfile, os
 sys.path.insert(0, str(pathlib.Path.cwd().parent))
@@ -384,4 +436,5 @@ display(pd.DataFrame({ch.AUTHOR_LABELS[a]: clean_strict(a) for a in ch.AUTHOR_OR
 # 3. SAST findings are **risk patterns, not exploits**. `import subprocess` is a
 #    finding; a shell injection is also a finding.
 #
-# Next: `02_run_the_benchmark.ipynb` — the same pipeline, 1,000 times.
+# Next: `02_reproduce_the_study.ipynb` — the same pipeline, 800 times, checked
+# against the study's own published results.
