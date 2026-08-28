@@ -1,7 +1,7 @@
 # Lab setup — for the workshop organisers
 
 **Session:** Benchmarking the Quality of AI Code Generators (hands-on, 3 hours)
-**Repository:** *(add the URL once published)*
+**Repository:** <https://github.com/dessertlab/cqbench-handson>
 
 ## The short version
 
@@ -35,7 +35,7 @@ present on each machine, the participants start working immediately.**
 On each lab machine:
 
 ```bash
-git clone <REPO URL>
+git clone https://github.com/dessertlab/cqbench-handson.git
 cd cqbench-handson
 
 conda env create -f environment.yml
