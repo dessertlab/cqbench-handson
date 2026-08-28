@@ -50,7 +50,7 @@ def rate(frame: pd.DataFrame, metric: str) -> float:
 
 
 def headline_table(frame: pd.DataFrame, show_role: bool = True) -> pd.DataFrame:
-    """Table 5 of the paper, per author: the numbers that get quoted.
+    """The headline table, per author: the numbers that get quoted.
 
     `frame` is the tidy multi-author frame from `results_frame()`.
 

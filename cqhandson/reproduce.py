@@ -3,7 +3,7 @@
 Two questions live here, both of which a notebook should ask in one line:
 
 * do we reproduce the study's per-task results? (`agreement_table`)
-* where we don't, why not? (`dedup_experiment`)
+* what did the de-duplication fix actually move? (`dedup_effect`)
 """
 from __future__ import annotations
 
@@ -57,54 +57,52 @@ def matched_text_values() -> pd.Series:
     return pd.Series(counter, name="findings").sort_values(ascending=False)
 
 
-def dedup_experiment(authors=tuple(FROZEN_NAMES)) -> pd.DataFrame:
-    """Re-scan each corpus once, then count under two de-duplication keys.
+def dedup_effect(authors=None) -> pd.DataFrame:
+    """What the de-duplication key changes, and what it leaves alone.
 
-    The released key is `(CWE, severity, matched text)`. When Semgrep redacts
-    the matched text — which it does for registry rules unless the CLI is
-    logged in — that third part is a constant and stops discriminating. The
-    alternative keys on the finding's source position, which is always present.
+    Every stored finding carries both the matched source text and its position,
+    so both keys can be counted from results already on disk -- no re-scan.
+
+    The released v1 key was `(class, severity, matched source text)`. Semgrep
+    redacts that third field to the literal ``"requires login"`` for
+    registry-sourced rules whenever the CLI is unauthenticated, so on a fresh
+    install it is a constant and stops discriminating: the key silently
+    degrades to `(class, severity)` and distinct findings collapse. Keying on
+    the finding's start position instead is what this repository ships.
+
+    The fixed key refines the released one, so counting released keys over the
+    surviving findings reproduces exactly what the released evaluator reported.
     """
     import sys
     if str(paths.VENDOR) not in sys.path:
         sys.path.insert(0, str(paths.VENDOR))
     from support.rq4_build_table import normalized_cwes
-    from .runner import _env, _write_corpus
+
+    from .loading import AUTHOR_ORDER
+    authors = tuple(authors or AUTHOR_ORDER)
 
     rows = []
     for author in authors:
-        with tempfile.TemporaryDirectory() as directory:
-            directory = pathlib.Path(directory)
-            _write_corpus(load_predictions(author), directory)
-            completed = subprocess.run(
-                ["semgrep", "scan", "--config", str(paths.SEMGREP_RULES), "--json",
-                 "--metrics", "off", "--no-git-ignore", "--disable-version-check",
-                 "--max-target-bytes", "1000000", str(directory)],
-                capture_output=True, text=True, env=_env())
-            report = json.loads(completed.stdout)
-
-        released, by_position = collections.defaultdict(set), collections.defaultdict(set)
-        for finding in report.get("results", []):
-            extra = finding["extra"]
-            cwes = extra.get("metadata", {}).get("cwe")
-            if not cwes:
-                continue
-            name = os.path.basename(finding["path"])
-            classes, severity = normalized_cwes(cwes), str(extra["severity"]).upper()
-            released[name].add((classes, severity, extra["lines"].strip()))
-            by_position[name].add((classes, severity,
-                                   finding["start"]["line"], finding["start"]["col"]))
-
-        errored = {os.path.basename(str(e.get("path", "")))
-                   for e in report.get("errors", [])
-                   if not str(e.get("path", "")).startswith("https:/semgrep.dev/...")}
+        results = load_results(author)
+        released = fixed = 0
+        for row in results:
+            findings = row["vulnerability_findings"]
+            released += len({(normalized_cwes(f["extra"]["metadata"]["cwe"]),
+                              str(f["extra"]["severity"]).upper(),
+                              str(f["extra"]["lines"]).strip())
+                             for f in findings})
+            fixed += len(findings)
+        flagged = sum(bool(row["vulnerability_findings"]) for row in results)
         rows.append({
             "author": AUTHOR_LABELS[author],
-            "as released": sum(len(v) for k, v in released.items() if k not in errored),
-            "keyed on source position":
-                sum(len(v) for k, v in by_position.items() if k not in errored),
-            "the study's number": sum(
-                r["vulns_total"] for r in read_jsonl(
-                    paths.FROZEN / f"{FROZEN_NAMES[author]}.jsonl")),
+            "vulnerabilities, released key": released,
+            "vulnerabilities, fixed key": fixed,
+            "tasks with \u22651 finding": flagged,
+            "% of tasks flagged": 100 * flagged / len(results),
         })
     return pd.DataFrame(rows).set_index("author")
+
+
+def matched_text_is_constant() -> bool:
+    """True when every stored finding carries the same redacted source text."""
+    return len(matched_text_values()) == 1

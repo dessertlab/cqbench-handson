@@ -62,7 +62,7 @@ against it; then we submit a model the benchmark has never seen.
 |---|---|---|---|
 | 00 | `00_setup.ipynb` | 15 min | Check the environment, read one task and its five answers, and see why *these* 200 tasks are in the benchmark |
 | 01 | `01_measurement_pipeline.ipynb` | 35 min | What the four tools do, then run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
-| 02 | `02_reproduce_the_study.ipynb` | 30 min | **Act I** — score the four shipped baselines, verify the fast runner against the reference evaluator, and check this machine's per-task output against the reference results |
+| 02 | `02_reproduce_the_study.ipynb` | 25 min | **Act I** — score the four shipped baselines, verify the fast runner against the reference evaluator, and check this machine's per-task output against the reference results |
 | 03 | `03_evaluate_a_new_model.ipynb` | 30 min | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots, then ask whether the benchmark still bites a model built after it |
 | 04 | `04_where_the_differences_are.ipynb` | 45 min | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move three measurement decisions and see which conclusions survive |
 
@@ -133,7 +133,7 @@ cqbench-handson/
 │   └── viz.py                 paper palette and figure defaults
 ├── notebooks/                 the session
 ├── slides/index.html          opening framing deck
-└── vendor/cqbench-v1/         the unmodified CQBench evaluator (GPL-3.0)
+└── vendor/cqbench-v1/         the CQBench v1 evaluator, one patch (GPL-3.0)
 ```
 
 ## The 200 tasks
@@ -217,7 +217,8 @@ participants find them rather than being told:
 
 ## Licence and attribution
 
-`vendor/cqbench-v1/` is the CQBench v1 artifact, unmodified, under **GPL-3.0**.
+`vendor/cqbench-v1/` is the CQBench v1 artifact under **GPL-3.0**, carrying a
+single one-line patch documented in `vendor/PATCHES.md`.
 This repository inherits that licence. The benchmark, dataset and paper are the
 work of the CQBench authors; the full source dataset lives on Zenodo
 ([10.5281/zenodo.21282648](https://doi.org/10.5281/zenodo.21282648)).

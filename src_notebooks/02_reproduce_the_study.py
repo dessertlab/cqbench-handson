@@ -1,7 +1,7 @@
 # %% [markdown]
 # # 02 — Getting a trustworthy baseline
 #
-# **Time:** ~30 minutes · **You run cells and read charts. No code to write.**
+# **Time:** ~25 minutes · **You run cells and read charts. No code to write.**
 #
 # Before measuring anything new, we make sure **this machine** — your laptop,
 # your analyzer versions, your operating system — produces the same numbers as
@@ -66,8 +66,8 @@ display(pd.DataFrame({
 # one pylint run per 200 files — and finishes in about 20 seconds per author.
 #
 # **We do not ask you to trust that.** `results/reference_check/` holds output
-# from the stock CLI on an 8-task slice; we score the same slice and diff every
-# field.
+# from the reference CLI in `vendor/` on an 8-task slice; we score the same
+# slice and diff every field.
 
 # %%
 for author in ("human", "chatgpt"):
@@ -106,9 +106,10 @@ display(ch.headline_table(results).round(1))
 # ## 4. Does this machine agree with the reference?
 #
 # `data/frozen/` holds the **reference per-task results** that ship with the
-# benchmark for these same 200 tasks. Comparing against them answers a practical
-# question — *is my environment sound?* — and it is the deepest check available,
-# far beyond what `verify_setup.py` does.
+# benchmark for these same 200 tasks. They were produced by the study's own
+# pipeline, so comparing against them answers a practical question — *is my
+# environment sound?* — and it is the deepest check available, far beyond what
+# `verify_setup.py` does.
 
 # %%
 agreement = ch.reproduce.agreement_table()
@@ -116,81 +117,89 @@ display(agreement.round(3))
 figures.plot_reproduction(agreement);
 
 # %% [markdown]
-# Read it in two parts.
+# **This machine is sound.** Structural verdicts agree on 100% of tasks. Defect
+# counts agree on 99–100%. Vulnerability counts agree on 95% of tasks or more.
+# And `clean_strict@1` — the headline metric — is **identical to the decimal**
+# for all four authors. Pinned analyzer versions plus a frozen ruleset plus a
+# fixed mapping do their job.
 #
-# **What matches perfectly.** Structural verdicts agree on 100% of tasks. Defect
-# counts agree on 99–100%. And `clean_strict@1` — the headline metric — is
-# **identical to the decimal** for all four authors. Pinned analyzer versions
-# plus a frozen ruleset plus a fixed mapping do their job.
+# Note what the residual is and is not. The reference numbers come from a
+# *separate implementation* of the same measurement, so a few percent of
+# disagreement on unbounded counts is what two independent pipelines agreeing
+# looks like. Not one rate moves.
 #
-# **What does not.** Vulnerability *counts* agree on only 76–83% of tasks, and
-# our totals run about 25% lower — same tasks, same weakness classes, fewer
-# findings each time. Something on this machine is collapsing findings the
-# reference counted separately, and it is worth ten minutes to find out what.
+# That distinction — counts drift, rates hold — is not a coincidence, and the
+# next section is about why.
 
 # %% [markdown]
-# ## 5. Finding the cause
+# ## 5. One line that moved a quarter of the counts
 #
-# The released evaluator de-duplicates Semgrep findings on the triple
-# `(weakness class, severity, matched source text)`. Look at what that third
-# component actually contains in our results:
+# The evaluator has to decide when two Semgrep findings are "the same finding"
+# before it counts them. CQBench v1 as released keyed on the triple
+# `(weakness class, severity, matched source text)`.
+#
+# Read that key as a reviewer would, and ask the only question that matters:
+# **does every component actually discriminate?** The first two are coarse — many
+# distinct findings share a class and a severity. So the third one is carrying
+# the whole key. Here is what it holds:
 
 # %%
 display(ch.reproduce.matched_text_values().to_frame())
 
 # %% [markdown]
-# **Every one of the 496 findings says `"requires login"`.**
+# **One value. Every finding says `"requires login"`.**
 #
-# Semgrep redacts the matched source text for registry rules unless the CLI is
-# authenticated. The frozen ruleset was resolved from the registry, so on any
-# unauthenticated machine that field is a **constant** — and a constant cannot
-# discriminate. The key silently degrades from a triple to a pair, and findings
-# that share a class and a severity collapse into one.
+# Semgrep redacts the matched source text for registry-sourced rules unless the
+# CLI is authenticated, and the frozen ruleset is registry-resolved. On any
+# fresh install that field is a **constant** — and a constant discriminates
+# nothing. The key silently degrades from a triple to a pair, and every finding
+# sharing a class and a severity in the same file collapses into one.
 #
-# The test: re-scan and key on the finding's **source position** instead, which
-# is always present regardless of authentication.
+# This repository ships the one-line fix: key on the finding's **source
+# position**, which is always present and never redacted. Both keys can be
+# counted from results already on disk, so we can see exactly what the fix did.
 
 # %%
-display(ch.reproduce.dedup_experiment())
+effect = ch.reproduce.dedup_effect()
+display(effect)
+figures.plot_dedup_effect(effect);
 
 # %% [markdown]
-# Confirmed. Keying on position lands within a few percent of the reference
-# numbers for every author; the shipped key undercounts by 25–30% on an
-# unauthenticated machine.
+# **Look at the two panels together, because the pair is the point.**
 #
-# **This is the lesson of the notebook, and it generalises far beyond CQBench.**
-# The key is a perfectly reasonable design, and it behaves exactly as intended in
-# an authenticated environment. What bit us is a **hidden environmental
-# dependency**: the output turns on a login state that appears in no version pin,
-# no checksum, no container image. Everything that *was* pinned matched
-# perfectly. The one thing nobody thinks to pin is the one that moved.
-#
-# Ask it of your own pipelines: *does any tool in here behave differently when
-# logged in?* Reproducibility checklists ask about versions, seeds and data.
-# They rarely ask that.
-#
-# **And what survived it.** Every incidence rate is unchanged, and so is
-# `clean_strict@1`. Collapsing several findings into one cannot turn a task with
-# findings into a task without any.
+# On the left, the fix moved every count: the released key was missing between
+# a quarter and a third of the findings. On the right, it moved
+# nothing at all — not one incidence rate, and not `clean_strict@1`. That is not
+# luck. Collapsing three findings into one cannot turn a task that *had*
+# findings into a task that had none, so anything phrased as *"on what fraction
+# of tasks"* is immune to the entire question, while anything phrased as *"how
+# many"* is not.
 #
 # > Report "model X produced N vulnerabilities" and you are reporting a number
 # > that depends on a de-duplication key your reader never sees — and, as it
 # > turns out, on whether you were logged in. Report "model X had at least one
 # > finding on Y% of tasks" and you are not.
 #
-# The rest of the session uses the released key, unchanged, so our incidence
-# rates stay directly comparable to the paper's.
+# **And the lesson generalises far past CQBench.** The released key is a
+# perfectly reasonable design that behaves exactly as intended on an
+# authenticated machine. What breaks it is a **hidden environmental
+# dependency**: the output turns on a login state that appears in no version
+# pin, no checksum, no container image. Everything that *was* pinned matched
+# perfectly. The one thing nobody thinks to pin is the one that moved.
+#
+# Ask it of your own pipeline before you publish from it: *does any tool in here
+# behave differently when logged in?* Reproducibility checklists ask about
+# versions, seeds and data. They rarely ask that.
 #
 # ---
 # ## Takeaways
 #
 # 1. **Three of these five authors built the benchmark.** Their rates are a
 #    ceiling, not a measurement.
-# 2. **Diff your tooling against the reference before you trust it.** Ours
-#    matches on every field; that is what makes the next notebook's numbers
-#    usable.
+# 2. **Diff your tooling against a reference before you trust it.** Ours matches
+#    on every field; that is what makes the next notebook's numbers usable.
 # 3. **Bounded rates are robust; unbounded counts are not.** Prefer summaries
 #    that survive a reasonable disagreement about how findings are counted.
-# 4. **Pin more than versions.** A login state moved a number by 25%.
+# 4. **Pin more than versions.** A login state moved a number by a third.
 #
 # Next: `03_evaluate_a_new_model.ipynb` — a model the benchmark has never seen.

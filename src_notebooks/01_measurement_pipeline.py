@@ -317,13 +317,14 @@ for finding in report["results"]:
 #
 # * a finding **without CWE metadata is discarded** — the benchmark counts
 #   weaknesses, not style hints;
-# * survivors are de-duplicated on `(normalized CWEs, severity, matched source
-#   text)`, and `CRITICAL`/`ERROR` severities are counted as **high severity**.
+# * survivors are de-duplicated on `(normalized CWEs, severity, source
+#   position)`, and `CRITICAL`/`ERROR` severities are counted as **high
+#   severity**.
 #
 # > Did you notice `extra['lines']` above? It should hold the source text
-# > Semgrep matched — and instead it says `'requires login'`. That is the third
-# > component of the de-duplication key. Park the observation; notebook 02 shows
-# > what it does to the published numbers.
+# > Semgrep matched — and instead it says `'requires login'`. CQBench v1 keyed
+# > de-duplication on that field. Park the observation; notebook 02 shows what
+# > it does to a count, and what it cannot do to a rate.
 #
 # The single finding on Claude's answer is `B404`: *"Consider possible security
 # implications associated with the subprocess module"*, CWE-78 (OS command
@@ -348,7 +349,9 @@ for finding in report["results"]:
     cwes = extra.get("metadata", {}).get("cwe")
     if not cwes:
         continue
-    key = (normalized_cwes(cwes), str(extra["severity"]).upper(), extra["lines"].strip())
+    start = finding["start"]
+    key = (normalized_cwes(cwes), str(extra["severity"]).upper(),
+           (start["line"], start["col"]))
     unique.setdefault(key, finding)
 
 print("vulns_total     =", len(unique))

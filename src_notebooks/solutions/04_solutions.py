@@ -136,41 +136,59 @@ for metric, title in [("vulnerability_free_rate", "Free of security findings —
     figures.plot_forest(compare_submission(filtered, metric), title, save=None)
 
 # %% [markdown]
-# **Answer — and this is the most consequential result in the session.**
+# **Answer — and the answer is no, which is the more useful outcome.**
 #
-# **(1) Removing `B404` moves the levels a lot, and only for the models.**
+# **(1) Removing `B404` moves the levels, and almost only for the models.**
 #
 # | | official | without `B404` |
 # |---|---:|---:|
 # | Human | 15.5 | 15.0 |
-# | ChatGPT | 48.5 | 38.0 |
-# | DeepSeek-Coder | 54.0 | 42.0 |
-# | Qwen2.5-Coder | 41.5 | 33.0 |
-# | Claude Opus 4.8 | **28.0** | **19.0** |
+# | ChatGPT | 48.5 | 46.0 |
+# | DeepSeek-Coder | 54.0 | 50.0 |
+# | Qwen2.5-Coder | 41.5 | 34.5 |
+# | Claude Opus 4.8 | **28.0** | **23.0** |
 #
-# The human barely moves — one task. Every model drops 8–12 points, because
-# models import `subprocess` far more often than humans do.
+# The human barely moves — one task. Every model drops, because models import
+# `subprocess` far more often than humans do: `B404` fires 110 times across the
+# five authors and **once** on the human.
 #
-# **(2) It changes a conclusion.** On overall vulnerability incidence the
-# submission's gap against the human reference becomes **−0.04 with an interval
-# of [−0.10, +0.02] — it crosses zero.** Notebook 03's statement that the
-# submission is significantly worse than the human on security was **carried by
-# a single rule that matches an import statement.**
+# **(2) The conclusion narrows but survives.** The submission's gap against the
+# human reference on overall vulnerability incidence goes from **−0.125,
+# interval [−0.190, −0.060]** to **−0.080, interval [−0.140, −0.020]**. A third
+# of the gap was the import rule. Two thirds were not, and the interval still
+# clears zero.
 #
-# **(3) But not the other conclusion.** On **high severity** the gap survives:
-# **−0.06, interval [−0.095, −0.025]**, still clear of zero. Those findings are
-# `B410` (unsafe XML parsing) and `B602` (`shell=True`) — rules that require
-# actual misuse, not an import.
+# **(3) High severity does not move at all** — **−0.060, interval [−0.095,
+# −0.025]**, identical before and after. `B404` is an advisory finding; it never
+# enters the high-severity count. Those findings are `B410` (unsafe XML
+# parsing) and `B602` (`shell=True`), rules that require actual misuse rather
+# than an import.
 #
-# **What you are allowed to say afterwards** is narrower than the paper's Python
-# row, and sharper:
+# **Push harder and it still holds.** Removing the next-loudest rules as well
+# does not close the gap — and can widen it, because the human trips those rules
+# too, so the human benefits from their removal:
 #
-# > The frontier model's residual security gap against human code is in
-# > **high-severity** patterns — unsafe XML parsing and shell execution — not in
-# > overall finding incidence, which is not distinguishable from the human
-# > reference once a permissive import-level rule is removed.
+# | removed | delta | interval |
+# |---|---:|---|
+# | `B404` | −0.080 | [−0.140, −0.020] |
+# | `B404` + `B113` | −0.095 | [−0.155, −0.040] |
+# | `B404` + `B310` | −0.070 | [−0.130, −0.010] |
 #
-# You got a better claim by trying to break the original one. That is the
-# transferable skill from today: **the last step of an evaluation is attacking
-# your own headline**, and a benchmark worth using is one that survives it in a
-# more precise form.
+# **The lesson is that the loudest rule is not the load-bearing one.** `B404` is
+# the most-fired rule against our submission and the most obviously permissive
+# one in the set — an import is not a vulnerability. It is exactly the rule an
+# author would remove if they wanted to make the result go away, and removing it
+# leaves the conclusion standing.
+#
+# **What you are allowed to say afterwards** is more precise than the headline:
+#
+# > The frontier model's security gap against human code is not an artefact of
+# > one permissive import-level rule: it narrows by about a third when that rule
+# > is removed and remains significant, and the high-severity gap — unsafe XML
+# > parsing and shell execution — does not move at all.
+#
+# You did not break the claim, and that is a result too. The transferable skill
+# is the attempt: **the last step of an evaluation is attacking your own
+# headline.** A claim that has survived a serious attempt to break it is worth
+# more than one that was never tested — and had the attack succeeded, you would
+# have wanted to know before a reviewer did.

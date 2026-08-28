@@ -232,14 +232,16 @@ figures.plot_odc_profile(deartifacted, save=None);
 # %% [markdown]
 # ### Exercise 3 — is the security gap carried by one rule?
 #
-# `B404` fires on `import subprocess` — the import itself, not any misuse — and
-# is the single largest contributor for every model. If the security result
-# rests on it, that changes what you are allowed to claim.
+# `B404` fires on `import subprocess` — the import itself, not any misuse. It is
+# the loudest rule against our submission (22 of Claude's findings) and the most
+# obviously permissive one in the set. If the security result rests on it, that
+# changes what you are allowed to claim.
 #
 # **TODO:** run as-is to drop `B404`, and compare the two forest plots below
-# with the ones in notebook 03. Does the submission's gap against the human
-# reference survive? Does it survive for **high severity**? Those two answers
-# are different, and the difference is the finding.
+# with the ones in notebook 03. How much of the submission's gap against the
+# human reference was that one rule carrying? Does the gap still clear zero
+# without it? Then try adding `"B113"` and see whether piling on more removals
+# helps your case or hurts it.
 
 # %%
 DROP_RULES = ("B404",)      # ← try () to restore, or add "B113"

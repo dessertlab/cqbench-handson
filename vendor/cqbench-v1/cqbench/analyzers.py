@@ -299,10 +299,17 @@ def analyze_semgrep(code: str, language: str, rules: Path) -> dict[str, Any]:
         cwes = extra.get("metadata", {}).get("cwe")
         if not cwes:
             continue
+        # The third component must discriminate between distinct findings that
+        # share a class and a severity. `extra["lines"]` -- the matched source
+        # text -- cannot: Semgrep redacts it to the literal "requires login"
+        # for registry-sourced rules whenever the CLI is unauthenticated, and
+        # the frozen ruleset is registry-resolved. The start position is always
+        # present and does not depend on authentication state.
+        start = finding.get("start", {})
         key = (
             module.normalized_cwes(cwes),
             str(extra.get("severity", "")).upper(),
-            str(extra.get("lines", "")).strip(),
+            (start.get("line"), start.get("col")),
         )
         unique.setdefault(key, finding)
     errors = [

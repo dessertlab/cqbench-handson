@@ -139,9 +139,14 @@ def semgrep_corpus(directory: Path, names: dict[str, str], jobs: int) -> dict[st
         cwes = extra.get("metadata", {}).get("cwe")
         if not cwes:                       # no CWE metadata -> not a vulnerability finding
             continue
+        # Third component keyed on source position, not on extra["lines"]:
+        # Semgrep redacts the matched text to "requires login" for registry
+        # rules on an unauthenticated CLI, which collapses distinct findings.
+        # Mirrors the same key in vendor/cqbench-v1/cqbench/analyzers.py.
+        start = finding.get("start", {})
         key = (normalized_cwes(cwes),
                str(extra.get("severity", "")).upper(),
-               str(extra.get("lines", "")).strip())
+               (start.get("line"), start.get("col")))
         findings[os.path.basename(finding["path"])].setdefault(key, finding)
 
     errors: dict[str, list] = collections.defaultdict(list)
