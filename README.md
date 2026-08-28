@@ -209,11 +209,15 @@ participants find them rather than being told:
 - **Ratio of means ≠ mean of ratios.** Claude's size relative to the human is
   0.99 one way and 1.38 the other. The exercise resolves it: every model is
   verbose on short functions and compressed on long ones.
-- **A headline difference can rest on one permissive rule.** Drop `B404` (which
-  fires on `import subprocess`) and Claude's overall vulnerability gap against
-  the human stops being significant — while the high-severity gap survives.
+- **Attack your own headline before someone else does.** `B404` fires on
+  `import subprocess` and is the loudest rule against the submission — exactly
+  the rule you would drop to make the result go away. Dropping it narrows
+  Claude's vulnerability gap against the human by a third and leaves it
+  significant; the high-severity gap does not move at all. The loudest rule is
+  not the load-bearing one.
 - **A pipeline can reproduce perfectly until it meets a dependency nobody
-  pinned.** See `NOTES-FOR-THE-CQBENCH-AUTHORS.md`.
+  pinned.** A de-duplication key whose only discriminating field is redacted
+  unless the analyzer is logged in — see `vendor/PATCHES.md`.
 
 ## Licence and attribution
 
