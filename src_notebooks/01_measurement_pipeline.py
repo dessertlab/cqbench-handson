@@ -436,5 +436,5 @@ display(pd.DataFrame({ch.AUTHOR_LABELS[a]: clean_strict(a) for a in ch.AUTHOR_OR
 # 3. SAST findings are **risk patterns, not exploits**. `import subprocess` is a
 #    finding; a shell injection is also a finding.
 #
-# Next: `02_reproduce_the_study.ipynb` — the same pipeline, 800 times, checked
-# against the study's own published results.
+# Next: `02_reproduce_the_study.ipynb` — the same pipeline, 800 times, and a
+# check that your machine agrees with the reference results.

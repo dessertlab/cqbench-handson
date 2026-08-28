@@ -1,16 +1,19 @@
 # %% [markdown]
-# # 02 — Reproducing the study
+# # 02 — Getting a trustworthy baseline
 #
 # **Time:** ~30 minutes · **You run cells and read charts. No code to write.**
 #
-# Before testing anything new, we check that our machine agrees with the
-# published research. That is the whole job of this notebook, and it is not a
-# formality: a re-implementation that has never been diffed against the original
-# is a re-implementation you cannot cite.
+# Before measuring anything new, we make sure **this machine** — your laptop,
+# your analyzer versions, your operating system — produces the same numbers as
+# the reference pipeline. Everything in notebook 03 depends on that.
 #
-# We score the **four authors the study itself measured** — the human reference
-# and the three models that built the benchmark — and compare our per-task
-# results with theirs.
+# This is not a formality. Static analysis is exquisitely sensitive to its
+# environment, and a result you cannot trace back to a verified setup is a
+# result you cannot report.
+#
+# We score the **four authors CQBench ships as baselines** — the human reference
+# and the three models that built the benchmark — and check our per-task output
+# against the reference results the benchmark distributes.
 #
 # Claude does not appear here. It arrives in notebook 03, as a submission the
 # benchmark has never seen.
@@ -100,11 +103,12 @@ display(ch.results_source(ch.BASELINES).to_frame())
 display(ch.headline_table(results).round(1))
 
 # %% [markdown]
-# ## 4. Did we reproduce the study?
+# ## 4. Does this machine agree with the reference?
 #
-# `data/frozen/` holds the study's **published per-task results** for these same
-# 200 tasks, produced by the original research pipeline rather than by the
-# released evaluator. This is a real target, not a self-check.
+# `data/frozen/` holds the **reference per-task results** that ship with the
+# benchmark for these same 200 tasks. Comparing against them answers a practical
+# question — *is my environment sound?* — and it is the deepest check available,
+# far beyond what `verify_setup.py` does.
 
 # %%
 agreement = ch.reproduce.agreement_table()
@@ -114,18 +118,18 @@ figures.plot_reproduction(agreement);
 # %% [markdown]
 # Read it in two parts.
 #
-# **What reproduces perfectly.** Structural verdicts agree on 100% of tasks.
-# Defect counts agree on 99–100%. And `clean_strict@1` — the metric the paper
-# leads with — is **identical to the decimal** for all four authors. Pinned
-# analyzer versions plus a frozen ruleset plus a fixed mapping do their job.
+# **What matches perfectly.** Structural verdicts agree on 100% of tasks. Defect
+# counts agree on 99–100%. And `clean_strict@1` — the headline metric — is
+# **identical to the decimal** for all four authors. Pinned analyzer versions
+# plus a frozen ruleset plus a fixed mapping do their job.
 #
 # **What does not.** Vulnerability *counts* agree on only 76–83% of tasks, and
-# our totals run about 25% below the study's — same tasks, same weakness
-# classes, fewer findings each time. Something is collapsing findings the study
-# counted separately.
+# our totals run about 25% lower — same tasks, same weakness classes, fewer
+# findings each time. Something on this machine is collapsing findings the
+# reference counted separately, and it is worth ten minutes to find out what.
 
 # %% [markdown]
-# ## 5. Finding the discrepancy
+# ## 5. Finding the cause
 #
 # The released evaluator de-duplicates Semgrep findings on the triple
 # `(weakness class, severity, matched source text)`. Look at what that third
@@ -144,21 +148,26 @@ display(ch.reproduce.matched_text_values().to_frame())
 # that share a class and a severity collapse into one.
 #
 # The test: re-scan and key on the finding's **source position** instead, which
-# is always present.
+# is always present regardless of authentication.
 
 # %%
 display(ch.reproduce.dedup_experiment())
 
 # %% [markdown]
-# Confirmed. Keying on position lands within a few percent of the study's own
-# numbers for every author; the released key undercounts by 25–30%.
+# Confirmed. Keying on position lands within a few percent of the reference
+# numbers for every author; the shipped key undercounts by 25–30% on an
+# unauthenticated machine.
 #
-# **What kind of bug this is.** Not sloppiness — the key is reasonable and works
-# exactly as intended on the machine where the study ran. It is a **hidden
-# environmental dependency**: the output depends on an authentication state that
-# appears in no version pin, no checksum, no container image. Everything that
-# *was* pinned reproduced perfectly. The one thing nobody thought to pin is the
-# one that moved.
+# **This is the lesson of the notebook, and it generalises far beyond CQBench.**
+# The key is a perfectly reasonable design, and it behaves exactly as intended in
+# an authenticated environment. What bit us is a **hidden environmental
+# dependency**: the output turns on a login state that appears in no version pin,
+# no checksum, no container image. Everything that *was* pinned matched
+# perfectly. The one thing nobody thinks to pin is the one that moved.
+#
+# Ask it of your own pipelines: *does any tool in here behave differently when
+# logged in?* Reproducibility checklists ask about versions, seeds and data.
+# They rarely ask that.
 #
 # **And what survived it.** Every incidence rate is unchanged, and so is
 # `clean_strict@1`. Collapsing several findings into one cannot turn a task with
@@ -177,9 +186,11 @@ display(ch.reproduce.dedup_experiment())
 #
 # 1. **Three of these five authors built the benchmark.** Their rates are a
 #    ceiling, not a measurement.
-# 2. **Diff your tooling against the reference implementation.** Ours matches on
-#    every field; that is what makes the next notebook's numbers usable.
-# 3. **Bounded rates reproduce; unbounded counts do not.** Prefer summaries that
-#    survive a reasonable disagreement about how findings are counted.
+# 2. **Diff your tooling against the reference before you trust it.** Ours
+#    matches on every field; that is what makes the next notebook's numbers
+#    usable.
+# 3. **Bounded rates are robust; unbounded counts are not.** Prefer summaries
+#    that survive a reasonable disagreement about how findings are counted.
+# 4. **Pin more than versions.** A login state moved a number by 25%.
 #
 # Next: `03_evaluate_a_new_model.ipynb` — a model the benchmark has never seen.

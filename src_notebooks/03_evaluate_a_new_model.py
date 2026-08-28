@@ -172,27 +172,7 @@ for metric, title in [
 # and 2026 fixed one and not the other.
 
 # %% [markdown]
-# ## Step 6 — did we reproduce the paper?
-#
-# The paper reports, for Python on exactly these 200 tasks:
-#
-# | Author | Defective | Vulnerable | High sev. | Clean | Total defects |
-# |---|---:|---:|---:|---:|---:|
-# | Human | 62.0 | 15.5 | 1.5 | 31.5 | 284 |
-# | Claude Opus 4.8 | 63.0 | 28.0 | 7.5 | 27.5 | 239 |
-
-# %%
-paper = pd.DataFrame(
-    {"Defective %": [62.0, 63.0], "Vulnerable %": [15.5, 28.0],
-     "High sev. %": [1.5, 7.5], "Clean %": [31.5, 27.5], "Total defects": [284, 239]},
-    index=["Human", "Claude Opus 4.8"])
-ours = ch.headline_table(results).loc[paper.index, paper.columns]
-display(pd.concat({"paper": paper, "ours": ours.round(1),
-                   "difference": (ours - paper).round(1)}, axis=1)
-          .swaplevel(axis=1).sort_index(axis=1))
-
-# %% [markdown]
-# ## Step 7 — does the benchmark still bite?
+# ## Step 6 — does the benchmark still bite?
 #
 # The sharpest objection to a failure-derived benchmark: *you built it from
 # three models' failures, so of course those three fail it. Does it have any
