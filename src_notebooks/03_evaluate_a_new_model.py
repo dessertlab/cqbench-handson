@@ -3,7 +3,7 @@
 #
 # **Time:** ~30 minutes · **This is the hands-on.**
 #
-# Notebook 02 established that our machine agrees with the published research.
+# Notebook 02 established that this machine agrees with the reference results.
 # Now we use the benchmark for what it was built for: **testing a model that
 # took no part in its construction.**
 #
