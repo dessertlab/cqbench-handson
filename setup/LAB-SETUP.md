@@ -82,4 +82,4 @@ otherwise — so a few failures are not a problem.
 
 ## Contact
 
-Any questions before the school: pietro.liguori@unina.it
+Any questions before the school: Pietro Liguori — <pietro.liguori@unina.it>

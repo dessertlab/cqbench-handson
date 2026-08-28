@@ -4,6 +4,10 @@
 # **Session:** Benchmarking the Quality of AI Code Generators · LLMA4SE 2026
 # **Time:** ~15 minutes
 #
+# The benchmark is **CQBench v1**, released with *"What is the Difference
+# Between Me and You? Benchmarking the Quality Gap Between Human-Written and
+# AI-Generated Code"*.
+#
 # By the end of this notebook you will have:
 #
 # 1. confirmed your environment can run both static analyzers,

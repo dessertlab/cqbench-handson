@@ -2,7 +2,7 @@
 
 A three-hour, Python-only hands-on session for **LLMA4SE 2026**, built on
 **CQBench v1** — the static code-quality challenge benchmark released with
-*"[paper title — fill this in]"*.
+*"What is the Difference Between Me and You? Benchmarking the Quality Gap Between Human-Written and AI-Generated Code"*.
 
 You will score **200 benchmark tasks × 5 code authors = 1,000 evaluations**
 live, on your own laptop, in about two minutes — then take the numbers apart.
@@ -226,3 +226,9 @@ single one-line patch documented in `vendor/PATCHES.md`.
 This repository inherits that licence. The benchmark, dataset and paper are the
 work of the CQBench authors; the full source dataset lives on Zenodo
 ([10.5281/zenodo.21282648](https://doi.org/10.5281/zenodo.21282648)).
+
+If you use the benchmark, cite the paper:
+
+> *What is the Difference Between Me and You? Benchmarking the Quality Gap Between Human-Written and AI-Generated Code*
+
+Session materials: Pietro Liguori — <pietro.liguori@unina.it>.
