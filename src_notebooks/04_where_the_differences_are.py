@@ -152,14 +152,14 @@ figures.plot_top_symbols(results);
 # One caveat governs everything below: **Semgrep reports risk-associated
 # patterns, not exploitable vulnerabilities.** Nothing is executed and nothing
 # is proven reachable. "Vulnerable" here means "matched a security rule".
-
-# %%
-figures.plot_security(results);
-
-# %% [markdown]
-# This is the gap that did not close. Claude is the best model at 28%, and still
-# **1.8×** the human reference, with **5×** its high-severity rate — while its
-# defect incidence (RQ2) was indistinguishable from the human's.
+#
+# This is the gap that did not close. Notebook 03 put a number on it — the
+# submission trips a security rule on **28%** of tasks against the human's
+# **15.5%**, and a high-severity one on **7.5%** against **1.5%** — while its
+# defect incidence, two blocks ago, was indistinguishable from the human's.
+#
+# So the question here is not *how big* the gap is. It is **what it is made
+# of**.
 
 # %%
 figures.plot_cwe(results);

@@ -460,33 +460,6 @@ def plot_top_symbols(results: pd.DataFrame, top: int = 10,
 # --------------------------------------------------------------------------- #
 # 6. RQ3 — security
 # --------------------------------------------------------------------------- #
-def plot_security(results: pd.DataFrame, save: str | None = "security"):
-    """Incidence and severity side by side, both coloured by role."""
-    order = _order(results)
-    fig, axes = plt.subplots(1, 2, figsize=(12.5, 4.2))
-
-    for axis, (column, title) in zip(axes, [
-            ("vulnerable", "Tasks with at least one security finding"),
-            ("high_severity", "Tasks with a high-severity finding")]):
-        values = (results.groupby("author_label", observed=True)[column]
-                  .mean().reindex(order) * 100)
-        bars = axis.bar(range(len(values)), values.to_numpy(), width=0.62,
-                        color=label_colors(values.index))
-        _bar_labels(axis, bars, pad=max(values) * 0.03)
-        axis.axhline(values["Human"], color=ROLE_COLORS["reference"], ls="--", lw=1.5,
-                     zorder=0)
-        axis.set_xticks(range(len(values)),
-                        [l.replace(" Opus", "\nOpus").replace("2.5-", "2.5-\n")
-                         for l in values.index], fontsize=8)
-        axis.set_ylim(0, max(values) * 1.25)
-        axis.set_ylabel("% of the 200 tasks")
-        axis.set_title(title)
-        axis.grid(axis="x", visible=False)
-    role_legend(axes[0], loc="upper left")
-    fig.tight_layout()
-    return _save(fig, save)
-
-
 CWE_NAMES = {
     "CWE-78": "OS command injection", "CWE-400": "resource exhaustion",
     "CWE-611": "XML external entity", "CWE-319": "cleartext transmission",
