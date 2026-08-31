@@ -1,9 +1,9 @@
-"""Checking our run against the study's own published results.
+"""Reading a measurement against a reference, in one line each.
 
-Two questions live here, both of which a notebook should ask in one line:
-
-* do we reproduce the study's per-task results? (`agreement_table`)
-* what did the de-duplication fix actually move? (`dedup_effect`)
+* what did the de-duplication fix actually move? (`dedup_effect`) — notebook 02
+* do we reproduce the study's own per-task results? (`agreement_table`) — not
+  used by any notebook; it is the optional environment check the README
+  describes, kept because `data/frozen/` ships with the repository.
 """
 from __future__ import annotations
 

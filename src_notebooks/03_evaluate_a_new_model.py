@@ -3,9 +3,10 @@
 #
 # **Time:** ~30 minutes · **This is the hands-on.**
 #
-# Notebook 02 established that this machine agrees with the reference results.
-# Now we use the benchmark for what it was built for: **testing a model that
-# took no part in its construction.**
+# Notebook 02 scored the four authors the benchmark ships with, and showed how
+# much of a count can hang on one line of the evaluator. Now we use the
+# benchmark for what it was built for: **testing a model that took no part in
+# its construction.**
 #
 # Our submission is **Claude Opus 4.8**, released after CQBench was built. Its
 # 200 answers already sit in `data/predictions/claude.jsonl` — treat them as the

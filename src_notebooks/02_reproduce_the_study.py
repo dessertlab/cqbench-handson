@@ -1,22 +1,20 @@
 # %% [markdown]
-# # 02 — Getting a trustworthy baseline
+# # 02 — Meet the cast, and score them
 #
-# **Time:** ~25 minutes · **You run cells and read charts. No code to write.**
+# **Time:** ~17 minutes · **You run cells and read charts. No code to write.**
 #
-# Before measuring anything new, we make sure **this machine** — your laptop,
-# your analyzer versions, your operating system — produces the same numbers as
-# the reference pipeline. Everything in notebook 03 depends on that.
+# Three things happen here, and the first one governs how you read every chart
+# for the rest of the day:
 #
-# This is not a formality. Static analysis is exquisitely sensitive to its
-# environment, and a result you cannot trace back to a verified setup is a
-# result you cannot report.
+# 1. **who the five authors are** — and why they are not five peers;
+# 2. **the benchmark actually runs** — 800 evaluations on your laptop, in about
+#    two minutes;
+# 3. **one line of the evaluator gets read out loud**, because a single field in
+#    it was quietly moving a third of the counts.
 #
-# We score the **four authors CQBench ships as baselines** — the human reference
-# and the three models that built the benchmark — and check our per-task output
-# against the reference results the benchmark distributes.
-#
-# Claude does not appear here. It arrives in notebook 03, as a submission the
-# benchmark has never seen.
+# We score the **four authors CQBench ships as baselines**: the human reference
+# and the three models that built the benchmark. Claude does not appear here —
+# it arrives in notebook 03, as a submission the benchmark has never seen.
 
 # %%
 import sys, pathlib, time, os, subprocess
@@ -54,20 +52,21 @@ display(pd.DataFrame({
 # remember which is which.
 
 # %% [markdown]
-# ## 2. Why this used to take nine hours
+# ## 2. Nine hours, or ninety seconds
 #
-# `python -m cqbench evaluate` starts a fresh `pylint` and a fresh `semgrep` for
-# **every task**. Pylint is cheap. Semgrep is not: it re-parses all 1,847 frozen
-# rules each time (~6 s) and, by default, makes a network round trip to check
-# for a new release (~25 s). Measured: **~33 s per task**, of which ~32 s is
-# overhead.
+# The released evaluator starts a fresh `pylint` and a fresh `semgrep` for
+# **every task** — about 33 s each, of which ~32 s is process startup. Five
+# authors × 200 tasks that way is roughly **nine hours**, which is not a
+# workshop.
 #
-# `cqhandson.runner` moves the process boundary — one semgrep run per author,
-# one pylint run per 200 files — and finishes in about 20 seconds per author.
+# `cqhandson.runner` moves the process boundary: one semgrep run per author, one
+# pylint run per 200 files. Same analyzers, same rules, same output — about
+# **20 seconds per author**.
 #
-# **We do not ask you to trust that.** `results/reference_check/` holds output
-# from the reference CLI in `vendor/` on an 8-task slice; we score the same
-# slice and diff every field.
+# You do not have to take that on faith. `results/reference_check/` holds the
+# reference CLI's output on an 8-task slice; the cell below scores the same
+# slice with the fast runner and diffs **every field**. It asserts, so if it
+# prints, they matched.
 
 # %%
 for author in ("human", "chatgpt"):
@@ -79,9 +78,6 @@ for author in ("human", "chatgpt"):
     differences = runner.diff_results(fast, official)
     print(f"{author:8s}  {len(fast)} tasks  ->  {len(differences)} differing fields")
     assert not differences
-
-# %% [markdown]
-# Zero differing fields. The speed-up is free.
 
 # %% [markdown]
 # ## 3. Score the four authors the study measured
@@ -103,36 +99,10 @@ display(ch.results_source(ch.BASELINES).to_frame())
 display(ch.headline_table(results).round(1))
 
 # %% [markdown]
-# ## 4. Does this machine agree with the reference?
+# ## 4. One line that moved a quarter of the counts
 #
-# `data/frozen/` holds the **reference per-task results** that ship with the
-# benchmark for these same 200 tasks. They were produced by the study's own
-# pipeline, so comparing against them answers a practical question — *is my
-# environment sound?* — and it is the deepest check available, far beyond what
-# `verify_setup.py` does.
-
-# %%
-agreement = ch.reproduce.agreement_table()
-display(agreement.round(3))
-figures.plot_reproduction(agreement);
-
-# %% [markdown]
-# **This machine is sound.** Structural verdicts agree on 100% of tasks. Defect
-# counts agree on 99–100%. Vulnerability counts agree on 95% of tasks or more.
-# And `clean_strict@1` — the headline metric — is **identical to the decimal**
-# for all four authors. Pinned analyzer versions plus a frozen ruleset plus a
-# fixed mapping do their job.
-#
-# Note what the residual is and is not. The reference numbers come from a
-# *separate implementation* of the same measurement, so a few percent of
-# disagreement on unbounded counts is what two independent pipelines agreeing
-# looks like. Not one rate moves.
-#
-# That distinction — counts drift, rates hold — is not a coincidence, and the
-# next section is about why.
-
-# %% [markdown]
-# ## 5. One line that moved a quarter of the counts
+# You just produced four columns of numbers. Before notebook 03 leans on them,
+# here is where one of them came from.
 #
 # The evaluator has to decide when two Semgrep findings are "the same finding"
 # before it counts them. CQBench v1 as released keyed on the triple
@@ -196,8 +166,9 @@ figures.plot_dedup_effect(effect);
 #
 # 1. **Three of these five authors built the benchmark.** Their rates are a
 #    ceiling, not a measurement.
-# 2. **Diff your tooling against a reference before you trust it.** Ours matches
-#    on every field; that is what makes the next notebook's numbers usable.
+# 2. **Read the keys, not just the numbers.** Every count in a benchmark rests
+#    on a decision about when two things are the same thing, and that decision
+#    is usually invisible in the paper.
 # 3. **Bounded rates are robust; unbounded counts are not.** Prefer summaries
 #    that survive a reasonable disagreement about how findings are counted.
 # 4. **Pin more than versions.** A login state moved a number by a third.

@@ -186,8 +186,8 @@ display(roles)
 # released *after* the benchmark was built. Those two are outside the
 # construction, which is the only reason anything here can be tested.
 #
-# Notebook 02 reproduces the study with the four authors it measured; notebook 03
-# then submits **Claude as a model under test**. Keep the consequence in view:
+# Notebook 02 scores the four authors the study measured; notebook 03 then
+# submits **Claude as a model under test**. Keep the consequence in view:
 #
 # > Beating the three models that built the benchmark is the weakest possible
 # > result. Reaching the human reference is the one that means something.
