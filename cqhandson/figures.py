@@ -344,12 +344,20 @@ def plot_lexical(results: pd.DataFrame, authors=("human", "dsc", "qwen", "claude
 
     matched = min(xs[-1] for xs, _ in curves.values())
     axis.axvline(matched, color=INK, ls="--", lw=1.2, zorder=0)
-    for author, (xs, ys) in curves.items():
-        at = np.interp(matched, xs, ys)
+    # Several authors land within a few tokens of each other at the matched
+    # volume, so the value labels are stacked in a column to the right of the
+    # marker rather than beside it, in descending order, each on its own row.
+    landing = {a: float(np.interp(matched, xs, ys)) for a, (xs, ys) in curves.items()}
+    span = axis.get_ylim()[1] - axis.get_ylim()[0]
+    for rank, (author, at) in enumerate(sorted(landing.items(),
+                                               key=lambda kv: -kv[1])):
         axis.plot(matched, at, "o", color=shades[author], markersize=9,
                   markeredgecolor="white", markeredgewidth=1.5, zorder=4)
-        axis.annotate(f"{at:.0f}", (matched, at), xytext=(7, -3),
-                      textcoords="offset points", fontsize=9, color=INK)
+        short = AUTHOR_LABELS[author].split()[0].replace("2.5-Coder", "2.5")
+        axis.annotate(f"{short}  {at:.0f}",
+                      (matched, axis.get_ylim()[1] * 0.95 - rank * span * 0.055),
+                      xytext=(10, 0), textcoords="offset points",
+                      fontsize=9, color=shades[author], va="center", zorder=5)
     axis.annotate("read the vocabularies here,\nat equal volume",
                   (matched, axis.get_ylim()[1] * 0.18), xytext=(-10, 0),
                   textcoords="offset points", ha="right", fontsize=8, color=MUTED)
