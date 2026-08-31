@@ -70,6 +70,36 @@ display(ch.results_source(ch.BASELINES).to_frame())
 display(ch.headline_table(results).round(1))
 
 # %% [markdown]
+# ### Reading the table
+#
+# Six numbers per author, and they do not all point the same way. Four of them
+# are **percentages of the 200 tasks** — how *often* something happened. Two are
+# **raw totals** — how *many* times in all.
+#
+# | column | what it counts | high means |
+# |---|---|---|
+# | `Defective %` | tasks where Pylint found **≥ 1** defect | **worse** |
+# | `Vulnerable %` | tasks where Semgrep found **≥ 1** weakness | **worse** |
+# | `High sev. %` | tasks with ≥ 1 weakness rated `CRITICAL` or `ERROR` | **worse** |
+# | `Clean %` | tasks that passed **all four** layers | **better** |
+# | `Total defects` | defects summed over all 200 tasks | **worse** |
+# | `Total vulns` | weaknesses summed over all 200 tasks | **worse** |
+#
+# **`Clean %` is the one that runs the other way**, and it is the metric the
+# benchmark leads with. It is a **conjunction**: a task counts as clean only if
+# the answer is the requested function, reaches 10% of the human implementation's
+# size, has zero defects **and** zero weaknesses. One failure anywhere and the
+# task scores zero — which is why a low `Clean %` never tells you *which* layer
+# said no.
+#
+# The four `%` columns and the two `Total` columns answer different questions,
+# and the difference matters more than it looks. *"On what fraction of tasks did
+# this happen"* is bounded between 0 and 100 and survives a reasonable
+# disagreement about how findings are counted. *"How many in total"* has no upper
+# bound, and moves whenever anyone changes their mind about when two findings are
+# the same finding. **Prefer the bounded ones when you report.**
+
+# %% [markdown]
 # ---
 # ## Takeaways
 #
