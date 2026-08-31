@@ -1,6 +1,6 @@
 # Benchmarking the Quality of AI Code Generators — hands-on
 
-A three-hour, Python-only hands-on session for **LLMA4SE 2026**, built on
+A Python-only hands-on session for **LLMA4SE 2026**, built on
 **CQBench v1** — the static code-quality challenge benchmark released with
 *"What is the Difference Between Me and You? Benchmarking the Quality Gap Between Human-Written and AI-Generated Code"*.
 

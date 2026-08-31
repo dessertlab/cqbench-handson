@@ -1,6 +1,6 @@
 # Lab setup — for the workshop organisers
 
-**Session:** Benchmarking the Quality of AI Code Generators (hands-on, 3 hours)
+**Session:** Benchmarking the Quality of AI Code Generators (hands-on)
 **Repository:** <https://github.com/dessertlab/cqbench-handson>
 
 ## The short version
@@ -29,8 +29,8 @@ internet connection *once*, to build the environment.
 
 Creating the conda environment takes 3–5 minutes per machine. With a room full
 of participants doing it simultaneously over conference wifi, it can take much
-longer and it eats into a three-hour session. **If the environment is already
-present on each machine, the participants start working immediately.**
+longer, and it comes straight out of the session. **If the environment is
+already present on each machine, the participants start working immediately.**
 
 On each lab machine:
 
