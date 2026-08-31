@@ -404,7 +404,6 @@
 </style>
 
 <div class="deck" id="deck" tabindex="-1">
-
   <!-- 1 -->
   <section class="slide is-active" data-sect="Open">
     <div class="gutter"><span class="idx">01</span><span class="sect">Open</span></div>
@@ -418,68 +417,103 @@
     </div>
   </section>
 
+  <!-- 2 -->
   <section class="slide" data-sect="Problem">
     <div class="gutter"><span class="idx">02</span><span class="sect">Problem</span></div>
     <div class="body">
-      <span class="eyebrow">Where we look, and where the cost is</span>
-      <h2 class="wide">We measure generated code in the first minute of its life. It lives for years.</h2>
-      <p><strong>Does it compile? Does it pass the tests? pass@1.</strong> HumanEval, MBPP, SWE-bench —
-        every one of them asks about the moment the code is written.</p>
-      <div class="cols">
-        <div class="card">
-          <span class="stat teal">60–80%</span>
-          <span class="label">of lifecycle cost</span>
-          <p>falls after first authorship — maintenance and evolution, not writing.</p>
-        </div>
-        <div class="card">
-          <span class="stat teal">Unfixed</span>
-          <span class="label">and accumulating</span>
-          <p>Smells and security issues introduced in AI-authored commits largely persist as debt.</p>
-        </div>
-        <div class="card">
-          <span class="stat teal">Invisible</span>
-          <span class="label">to the test suite</span>
-          <p>A missing timeout, an unvalidated path, a swallowed exception. All pass green.</p>
-        </div>
-      </div>
-      <p class="quote">The developer's job moved from <em>authoring</em> to <em>reviewing</em>.
-        Our measurements did not move with it.</p>
+      <span class="eyebrow">Where we look</span>
+      <h2 class="wide">Every code benchmark you know asks one question: <em>does it run?</em></h2>
+      <p class="lead">HumanEval, MBPP, SWE-bench. Generate, execute, count the passes. <b class="mono">pass@1</b>.</p>
+      <p>That question needs a harness, a test suite, and a definition of correct.
+        It says nothing about the code you will be reading six months from now.</p>
+      <p class="quote">So how <em>would</em> you measure whether generated code is any good —
+        without running it? Thirty seconds. What would you compute, and what would you
+        compare it against?</p>
     </div>
   </section>
 
-  <section class="slide" data-sect="Problem">
-    <div class="gutter"><span class="idx">03</span><span class="sect">Problem</span></div>
+  <!-- 3 -->
+  <section class="slide" data-sect="Benchmark">
+    <div class="gutter"><span class="idx">03</span><span class="sect">Benchmark</span></div>
     <div class="body">
-      <span class="eyebrow">The question for today</span>
-      <h2 class="wide">So how <em>would</em> you measure whether generated code is any good — without running it?</h2>
-      <p class="lead">Think about it concretely for thirty seconds. What would you compute?
-        What would you compare it against? What would make your answer wrong?</p>
-      <p>Every answer you just gave is a design decision. This session is about what those decisions
-        do to the number at the end.</p>
+      <span class="eyebrow">Why another benchmark</span>
+      <h2>Correctness is not quality.</h2>
+      <table>
+        <thead><tr><th>Benchmark</th><th>Asks</th><th>Needs</th></tr></thead>
+        <tbody>
+          <tr><td><b>HumanEval · MBPP</b></td><td>does the function pass its unit tests?</td><td class="mono">a test harness</td></tr>
+          <tr><td><b>SWE-bench</b></td><td>does the patch turn the repo's suite green?</td><td class="mono">repo + env + tests</td></tr>
+          <tr style="background:var(--teal-soft)"><td><b>CQBench</b></td><td>is the code substantial, defect-free, weakness-free?</td><td class="mono">a parser + 2 analyzers</td></tr>
+        </tbody>
+      </table>
+      <p>A function can pass every test it is given and still shell out through
+        <code class="mono">os.system</code>, swallow the exception, and never close the socket.
+        That code is <strong>correct</strong>. It is not <strong>good</strong>.</p>
     </div>
   </section>
 
+  <!-- 4 -->
   <section class="slide" data-sect="Benchmark">
     <div class="gutter"><span class="idx">04</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">One answer</span>
       <h2>CQBench</h2>
-      <p class="lead">A static code-quality challenge benchmark. Real functions mined from real
-        repositories: the docstring becomes the specification, the signature becomes the contract.</p>
+      <p class="lead">Real functions mined from real repositories: the docstring becomes the
+        specification, the signature becomes the contract, and nothing is ever executed.</p>
       <div class="cols">
         <div class="card"><span class="stat num">27,346</span><span class="label">tasks</span></div>
-        <div class="card"><span class="stat num">3</span><span class="label">languages · Python, Java, C</span></div>
-        <div class="card"><span class="stat num">1,847</span><span class="label">frozen semgrep rules</span></div>
+        <div class="card"><span class="stat num">10,354</span><span class="label">of them Python</span></div>
+        <div class="card"><span class="stat num">1,847</span><span class="label">frozen semgrep rules · 16 packs</span></div>
         <div class="card"><span class="stat num">4</span><span class="label">shipped baselines + human</span></div>
       </div>
-      <p class="mono" style="font-size:.78em">Today: the <b>10,354</b> Python tasks — and a 200-task slice of them.</p>
+      <p class="mono" style="font-size:.78em">Python, Java, C. Today: Python, and a <b>200-task</b> slice of it.</p>
       <p class="mono" style="font-size:.66em;opacity:.62">“What is the Difference Between Me and You? Benchmarking the
         Quality Gap Between Human-Written and AI-Generated Code”</p>
     </div>
   </section>
 
-  <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">05</span><span class="sect">Benchmark</span></div>
+  <!-- 5 -->
+  <section class="slide" data-sect="Construction">
+    <div class="gutter"><span class="idx">05</span><span class="sect">Construction</span></div>
+    <div class="body">
+      <span class="eyebrow">How the tasks were chosen</span>
+      <h2 class="wide">A task is here <em>because</em> models already failed it.</h2>
+      <p class="mono" style="font-size:.82em"><span class="num">~256,000</span> candidate Python
+        functions in &nbsp;→&nbsp; <span class="num">10,354</span> tasks out. Five conditions did it.</p>
+      <table>
+        <tbody>
+          <tr><td class="mono">01</td><td>the human original parses, exposes the signature, is non-trivial</td></tr>
+          <tr><td class="mono">02</td><td>three models answered it — <b>gpt-3.5-turbo</b>, <b>DeepSeek-Coder 33B</b>, <b>Qwen2.5-Coder 32B</b></td></tr>
+          <tr><td class="mono">03</td><td>an answer counted only above <b>10%</b> of the human's nloc or Halstead volume</td></tr>
+          <tr><td class="mono">04</td><td>at least <b>two</b> of the three produced <b>≥ 3 findings</b> each</td></tr>
+          <tr><td class="mono">05</td><td>and those findings <b>shared a class</b> — same ODC type, or same CWE</td></tr>
+        </tbody>
+      </table>
+      <p>Condition 05 does not select <em>hard</em> tasks. It selects tasks where independent models <strong>fail the same way</strong>.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="slide" data-sect="Construction">
+    <div class="gutter"><span class="idx">06</span><span class="sect">Construction</span></div>
+    <div class="body">
+      <span class="eyebrow">The 200 tasks you will score</span>
+      <h2>1,972 findings put them there.</h2>
+      <div class="cols">
+        <div class="card"><span class="stat num">9.9</span><span class="label">findings per task, by the three</span><p>Never fewer than six. One task carries 49.</p></div>
+        <div class="card"><span class="stat num">177</span><span class="label">tasks with an agreed defect type</span><p>Assignment 101 · Interface 74 · Checking 66 · Func/Class/Obj 21 · Algorithm 13</p></div>
+        <div class="card"><span class="stat num">100</span><span class="label">tasks with an agreed weakness class</span><p>14 distinct CWEs. Command injection 39 · resource exhaustion 33 · XXE 11</p></div>
+      </div>
+      <p class="mono" style="font-size:.8em">three strata &nbsp;·&nbsp; defects only <b>100</b>
+        &nbsp;·&nbsp; both <b>77</b> &nbsp;·&nbsp; weaknesses only <b>23</b></p>
+      <p>That is what <em>quality</em> means here, made countable: not a score out of ten, but
+        a set of named failure classes that two independent models walked into together.</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="slide" data-sect="Scope">
+    <div class="gutter"><span class="idx">07</span><span class="sect">Scope</span></div>
     <div class="body">
       <span class="eyebrow">Scope</span>
       <h2>Nothing is executed.</h2>
@@ -507,8 +541,9 @@
     </div>
   </section>
 
+  <!-- 8 -->
   <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">06</span><span class="sect">Pipeline</span></div>
+    <div class="gutter"><span class="idx">08</span><span class="sect">Pipeline</span></div>
     <div class="body">
       <span class="eyebrow">The measurement</span>
       <h2>Four layers. Every one can veto.</h2>
@@ -527,15 +562,12 @@
     </div>
   </section>
 
-  <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">07</span><span class="sect">Sampling</span></div>
+  <!-- 9 -->
+  <section class="slide" data-sect="Reading">
+    <div class="gutter"><span class="idx">09</span><span class="sect">Reading</span></div>
     <div class="body">
       <span class="eyebrow">Read this before you read any result</span>
-      <h2>These tasks were kept <em>because</em> models failed them.</h2>
-      <p>Out of ~256,000 Python candidates, a task survives only if two models cleared a
-        10% complexity floor, each produced ≥3 findings, and those findings
-        <strong>shared a defect type or weakness class</strong>. Not hard tasks — tasks
-        where independent models fail the <em>same way</em>.</p>
+      <h2 class="wide">Failures are enriched here by design.</h2>
       <div class="cols">
         <div class="card">
           <span class="label">You can say</span>
@@ -552,8 +584,9 @@
     </div>
   </section>
 
+  <!-- 10 -->
   <section class="slide" data-sect="Cast">
-    <div class="gutter"><span class="idx">08</span><span class="sect">Cast</span></div>
+    <div class="gutter"><span class="idx">10</span><span class="sect">Cast</span></div>
     <div class="body">
       <span class="eyebrow">The cast, and the asymmetry that makes it testable</span>
       <h2>Three of the five authors <em>defined</em> this benchmark.</h2>
@@ -573,8 +606,9 @@
     </div>
   </section>
 
+  <!-- 11 -->
   <section class="slide" data-sect="Flow">
-    <div class="gutter"><span class="idx">09</span><span class="sect">Flow</span></div>
+    <div class="gutter"><span class="idx">11</span><span class="sect">Flow</span></div>
     <div class="body">
       <span class="eyebrow">What you will actually run</span>
       <h2>Validate. Evaluate. Compare.</h2>
@@ -590,8 +624,9 @@
     </div>
   </section>
 
+  <!-- 12 -->
   <section class="slide" data-sect="Go">
-    <div class="gutter"><span class="idx">10</span><span class="sect">Go</span></div>
+    <div class="gutter"><span class="idx">12</span><span class="sect">Go</span></div>
     <div class="body">
       <span class="eyebrow">Let's go</span>
       <h2>Open a terminal.</h2>
@@ -603,16 +638,17 @@
         their exact versions, and scores 8 tasks end to end. If it fails, sit next to someone whose
         didn't; the precomputed results ship in the repo and every analysis notebook falls back to them.</p>
       <p class="quote">Anyone can run a benchmark. The skill is knowing which of its numbers you
-        would defend. That is what the next two hours are for.</p>
+        would defend.</p>
       <p class="mono" style="font-size:.82em;color:var(--teal)">then → notebooks/00_setup.ipynb</p>
     </div>
   </section>
+
 </div>
 
 <div class="rail"><i id="rail"></i></div>
 <nav class="nav" aria-label="Slide navigation">
   <button id="prev" aria-label="Previous slide">‹</button>
-  <span class="count"><span id="cur">1</span>/<span id="tot">10</span></span>
+  <span class="count"><span id="cur">1</span>/<span id="tot">12</span></span>
   <button id="next" aria-label="Next slide">›</button>
 </nav>
 
