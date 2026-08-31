@@ -129,8 +129,11 @@ SCOREBOARD = [
 def plot_scoreboard(results: pd.DataFrame, save: str | None = "scoreboard"):
     """The four headline rates, one small multiple each, coloured by role.
 
-    A dashed line marks the human reference in every panel: that is the bar a
-    submission is trying to reach.
+    A dashed line marks the human reference in every panel. It is a *reference*,
+    not a target: three of these panels count problems, so being under the line
+    is the good side there, and only the fourth rewards being above it. Every
+    title says which way it runs, because a reader scanning four panels will
+    otherwise carry one panel's direction into the next.
     """
     order = _order(results)
     fig, axes = plt.subplots(2, 2, figsize=(11.5, 7))
@@ -148,7 +151,8 @@ def plot_scoreboard(results: pd.DataFrame, save: str | None = "scoreboard"):
                          for l in values.index], fontsize=8)
         axis.set_ylim(0, max(values) * 1.22)
         axis.set_ylabel("% of tasks")
-        axis.set_title(title + ("   (higher is better)" if higher_is_better else ""))
+        axis.set_title(title + ("   (higher is better)" if higher_is_better
+                                else "   (lower is better)"))
         axis.grid(axis="x", visible=False)
 
     role_legend(axes[0][0], loc="upper left")
