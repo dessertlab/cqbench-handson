@@ -203,6 +203,206 @@
 </style>
 </head>
 <body>
+<title>Measuring What Tests Can't</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root{
+    --ink:#0E1D1C; --paper:#F5F8F8; --surface:#FFFFFF; --rule:#D2DEDD;
+    --muted:#556867; --teal:#00726F; --teal-soft:#E2F0EF;
+    --warn:#9A5B00; --warn-soft:#F7EBD8; --err:#A3231F; --err-soft:#F8E3E1;
+    --shadow:0 1px 2px rgba(14,29,28,.06), 0 8px 28px rgba(14,29,28,.07);
+    --gutter:clamp(3.6rem, 8vw, 8.5rem);
+    --pad:clamp(1.4rem, 3.4vw, 4rem);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ink:#E4EDEC; --paper:#0C1817; --surface:#132322; --rule:#2A3E3D;
+      --muted:#93A8A6; --teal:#57CFC9; --teal-soft:#15302F;
+      --warn:#E3A250; --warn-soft:#2E2314; --err:#F08B84; --err-soft:#33191A;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#E4EDEC; --paper:#0C1817; --surface:#132322; --rule:#2A3E3D;
+    --muted:#93A8A6; --teal:#57CFC9; --teal-soft:#15302F;
+    --warn:#E3A250; --warn-soft:#2E2314; --err:#F08B84; --err-soft:#33191A;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 32px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:clamp(15px,1.05vw + 9px,20px); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- deck shell ---------- */
+  .deck{position:relative;height:100vh;height:100dvh;overflow:hidden}
+  .slide{
+    position:absolute; inset:0; display:none;
+    grid-template-columns:var(--gutter) minmax(0,1fr);
+    padding:var(--pad) var(--pad) calc(var(--pad) + 1.6rem) 0;
+  }
+  .slide.is-active{display:grid}
+  @media (prefers-reduced-motion:no-preference){
+    .slide.is-active > .body{animation:rise .38s cubic-bezier(.2,.7,.3,1) both}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* the gutter: a source-file margin, where line numbers and severity live */
+  .gutter{
+    border-right:1px solid var(--rule); display:flex; flex-direction:column;
+    justify-content:space-between; padding:.2rem 1rem .2rem var(--pad);
+    font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:.68em;
+    letter-spacing:.06em; color:var(--muted); text-transform:uppercase;
+  }
+  .gutter .idx{color:var(--ink); font-weight:600}
+  .gutter .sect{writing-mode:vertical-rl; text-orientation:mixed; letter-spacing:.22em; opacity:.85}
+
+  .body{
+    padding-left:clamp(1.1rem,2.6vw,2.6rem); min-width:0;
+    display:flex; flex-direction:column; justify-content:center; gap:1.15rem;
+    max-height:100%; overflow-y:auto; overscroll-behavior:contain;
+  }
+
+  /* ---------- type ---------- */
+  h1,h2,h3{font-family:Archivo,system-ui,sans-serif; margin:0; text-wrap:balance}
+  h1{font-size:clamp(2.1rem,5.2vw,4.3rem); font-weight:800; line-height:1.02; letter-spacing:-.026em}
+  h2{font-size:clamp(1.55rem,3.5vw,2.9rem); font-weight:700; line-height:1.08; letter-spacing:-.018em; max-width:19ch}
+  h2.wide{max-width:26ch}
+  h3{font-size:1.02em; font-weight:600; letter-spacing:-.005em}
+  p{margin:0; max-width:62ch; color:var(--muted)}
+  p.lead{color:var(--ink); font-size:1.14em; max-width:52ch}
+  strong{color:var(--ink); font-weight:600}
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace; font-size:.7em; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--teal); font-weight:500;
+  }
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ---------- components ---------- */
+  .cols{display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  .card{
+    background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+    padding:1rem 1.1rem; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:.4rem;
+  }
+  .card p{font-size:.9em}
+  .stat{font-family:Archivo,sans-serif; font-weight:800; font-size:clamp(1.7rem,3.4vw,2.7rem);
+        line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+  .stat.teal{color:var(--teal)}
+  .label{font-family:"IBM Plex Mono",monospace; font-size:.66em; letter-spacing:.13em;
+         text-transform:uppercase; color:var(--muted)}
+
+  ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:.62rem; max-width:60ch}
+  ul li{padding-left:1.5rem; position:relative; color:var(--muted)}
+  ul li::before{
+    content:""; position:absolute; left:0; top:.62em; width:.62rem; height:1px; background:var(--teal);
+  }
+  ul.no li::before{background:var(--err)}
+
+  /* layered pipeline */
+  .layers{display:flex; flex-direction:column; gap:.5rem; max-width:56ch}
+  .layer{
+    display:grid; grid-template-columns:2.1rem 1fr auto; gap:.9rem; align-items:baseline;
+    background:var(--surface); border:1px solid var(--rule); border-left:3px solid var(--teal);
+    border-radius:2px; padding:.62rem .9rem;
+  }
+  .layer .n{font-family:"IBM Plex Mono",monospace; color:var(--teal); font-weight:600; font-size:.85em}
+  .layer .t{color:var(--ink); font-weight:500}
+  .layer .tool{font-family:"IBM Plex Mono",monospace; font-size:.74em; color:var(--muted)}
+  /* Role encodes standing relative to the benchmark's construction, so it gets
+     its own colour rather than the generic accent. */
+  .layer.built{border-left-color:var(--warn)}
+  .layer.built .n, .layer.built .tool{color:var(--warn)}
+  .layer.ref{border-left-color:var(--teal)}
+  .layer.test{border-left-color:var(--ink); border-left-width:5px}
+  .layer.test .n{color:var(--ink)}
+  .layer.test .t{font-weight:600}
+  .layer.test .tool{color:var(--ink); font-weight:600; letter-spacing:.08em}
+
+  /* the analyzer report — the hero object of this subject */
+  .report{
+    background:var(--surface); border:1px solid var(--rule); border-radius:3px;
+    box-shadow:var(--shadow); overflow:hidden; font-family:"IBM Plex Mono",monospace;
+    font-size:.76em; line-height:1.65; max-width:74ch;
+  }
+  .report .head{
+    display:flex; gap:.7rem; align-items:center; flex-wrap:wrap;
+    padding:.5rem .85rem; border-bottom:1px solid var(--rule); background:var(--teal-soft);
+    font-size:.9em; letter-spacing:.04em;
+  }
+  .report .src{margin:0; padding:.6rem 0; overflow-x:auto}
+  .report .ln{display:grid; grid-template-columns:2.6rem 1fr; white-space:pre}
+  .report .ln > span:first-child{color:var(--muted); text-align:right; padding-right:.9rem; opacity:.7}
+  .report .ln.hit{background:var(--err-soft)}
+  .report .foot{border-top:1px solid var(--rule); padding:.55rem .85rem; display:flex;
+                flex-direction:column; gap:.25rem; font-size:.92em}
+  .report .foot span{color:var(--muted)}
+  .report .foot b{color:var(--ink); font-weight:500}
+  .k{color:var(--teal)}
+  .s{color:var(--warn)}
+
+  .chip{
+    display:inline-flex; align-items:center; gap:.35rem; padding:.1rem .48rem; border-radius:2px;
+    font-family:"IBM Plex Mono",monospace; font-size:.68em; letter-spacing:.08em;
+    text-transform:uppercase; font-weight:600; border:1px solid transparent;
+  }
+  .chip.err{background:var(--err-soft); color:var(--err); border-color:var(--err)}
+  .chip.warn{background:var(--warn-soft); color:var(--warn); border-color:var(--warn)}
+  .chip.ok{background:var(--teal-soft); color:var(--teal); border-color:var(--teal)}
+
+  table{border-collapse:collapse; width:100%; max-width:64ch; font-size:.86em}
+  th,td{text-align:left; padding:.42rem .7rem; border-bottom:1px solid var(--rule)}
+  th{font-family:"IBM Plex Mono",monospace; font-size:.76em; letter-spacing:.1em;
+     text-transform:uppercase; color:var(--muted); font-weight:500}
+  td.n{text-align:right; font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+  td b{font-weight:600}
+
+  .rule{height:1px; background:var(--rule); border:0; margin:.2rem 0}
+  .quote{border-left:3px solid var(--teal); padding:.15rem 0 .15rem 1.05rem;
+         font-size:1.06em; color:var(--ink); max-width:50ch}
+
+  .cmd{
+    font-family:"IBM Plex Mono",monospace; font-size:.86em; background:var(--surface);
+    border:1px solid var(--rule); border-radius:3px; padding:.85rem 1rem; max-width:56ch;
+    box-shadow:var(--shadow); white-space:pre; overflow-x:auto; color:var(--ink);
+  }
+  .cmd .p{color:var(--teal)}
+
+  /* ---------- chrome ---------- */
+  .rail{position:fixed; left:0; right:0; bottom:0; height:2px; background:var(--rule); z-index:5}
+  .rail i{display:block; height:100%; background:var(--teal); width:0; transition:width .32s ease}
+  @media (prefers-reduced-motion:reduce){ .rail i{transition:none} }
+
+  .nav{
+    position:fixed; right:var(--pad); bottom:1.05rem; display:flex; gap:.3rem; align-items:center;
+    font-family:"IBM Plex Mono",monospace; font-size:.7rem; color:var(--muted); z-index:6;
+  }
+  .nav button{
+    font:inherit; color:var(--muted); background:var(--surface); border:1px solid var(--rule);
+    border-radius:2px; width:1.9rem; height:1.6rem; cursor:pointer; line-height:1;
+  }
+  .nav button:hover{color:var(--teal); border-color:var(--teal)}
+  .nav button:focus-visible, .deck:focus-visible{outline:2px solid var(--teal); outline-offset:2px}
+  .nav .count{padding:0 .5rem; font-variant-numeric:tabular-nums}
+
+  @media (max-width:640px){
+    .gutter .sect{display:none}
+    .slide{padding-bottom:calc(var(--pad) + 2.4rem)}
+  }
+  @media print{
+    .deck{height:auto; overflow:visible}
+    .slide{display:grid !important; position:static; break-after:page; min-height:92vh}
+    .nav,.rail{display:none}
+  }
+</style>
+
 <div class="deck" id="deck" tabindex="-1">
 
   <!-- 1 -->
@@ -211,31 +411,20 @@
     <div class="body">
       <span class="eyebrow">LLMA4SE 2026 · Hands-on</span>
       <h1>Measuring what<br>tests can't</h1>
-      <p class="lead">Benchmarking the quality of AI code generators. Three hours, one benchmark,
+      <p class="lead">Benchmarking the quality of AI code generators. One benchmark,
         1,000 evaluations, and a running argument about what the numbers mean.</p>
       <hr class="rule">
       <p class="mono" style="font-size:.8em;letter-spacing:.05em">CQBench v1 &nbsp;·&nbsp; Python &nbsp;·&nbsp; 5 code authors &nbsp;·&nbsp; bring a laptop</p>
     </div>
   </section>
 
-  <!-- 2 -->
   <section class="slide" data-sect="Problem">
     <div class="gutter"><span class="idx">02</span><span class="sect">Problem</span></div>
     <div class="body">
-      <span class="eyebrow">Where the field looks</span>
-      <h2>Almost everything we measure about generated code, we measure in the first minute of its life.</h2>
-      <p><strong>Does it compile? Does it pass the tests? pass@1.</strong> HumanEval, MBPP, MultiPL-E,
-        SWE-bench. Every one of them asks a question about the moment the code is written.</p>
-      <p>That moment is real, and it is not where software spends its money.</p>
-    </div>
-  </section>
-
-  <!-- 3 -->
-  <section class="slide" data-sect="Problem">
-    <div class="gutter"><span class="idx">03</span><span class="sect">Problem</span></div>
-    <div class="body">
-      <span class="eyebrow">Where the cost is</span>
-      <h2 class="wide">Code is written once and read, reviewed, patched and secured for years.</h2>
+      <span class="eyebrow">Where we look, and where the cost is</span>
+      <h2 class="wide">We measure generated code in the first minute of its life. It lives for years.</h2>
+      <p><strong>Does it compile? Does it pass the tests? pass@1.</strong> HumanEval, MBPP, SWE-bench —
+        every one of them asks about the moment the code is written.</p>
       <div class="cols">
         <div class="card">
           <span class="stat teal">60–80%</span>
@@ -245,8 +434,7 @@
         <div class="card">
           <span class="stat teal">Unfixed</span>
           <span class="label">and accumulating</span>
-          <p>A large share of the smells and security issues introduced in AI-authored commits are never
-            repaired; they persist as debt.</p>
+          <p>Smells and security issues introduced in AI-authored commits largely persist as debt.</p>
         </div>
         <div class="card">
           <span class="stat teal">Invisible</span>
@@ -254,13 +442,13 @@
           <p>A missing timeout, an unvalidated path, a swallowed exception. All pass green.</p>
         </div>
       </div>
-      <p>The developer's job moved from <em>authoring</em> to <em>reviewing</em>. Our measurements didn't move with it.</p>
+      <p class="quote">The developer's job moved from <em>authoring</em> to <em>reviewing</em>.
+        Our measurements did not move with it.</p>
     </div>
   </section>
 
-  <!-- 4 -->
   <section class="slide" data-sect="Problem">
-    <div class="gutter"><span class="idx">04</span><span class="sect">Problem</span></div>
+    <div class="gutter"><span class="idx">03</span><span class="sect">Problem</span></div>
     <div class="body">
       <span class="eyebrow">The question for today</span>
       <h2 class="wide">So how <em>would</em> you measure whether generated code is any good — without running it?</h2>
@@ -271,9 +459,8 @@
     </div>
   </section>
 
-  <!-- 5 -->
   <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">05</span><span class="sect">Benchmark</span></div>
+    <div class="gutter"><span class="idx">04</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">One answer</span>
       <h2>CQBench</h2>
@@ -286,12 +473,13 @@
         <div class="card"><span class="stat num">4</span><span class="label">shipped baselines + human</span></div>
       </div>
       <p class="mono" style="font-size:.78em">Today: the <b>10,354</b> Python tasks — and a 200-task slice of them.</p>
+      <p class="mono" style="font-size:.66em;opacity:.62">“What is the Difference Between Me and You? Benchmarking the
+        Quality Gap Between Human-Written and AI-Generated Code”</p>
     </div>
   </section>
 
-  <!-- 6 -->
   <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">06</span><span class="sect">Benchmark</span></div>
+    <div class="gutter"><span class="idx">05</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">Scope</span>
       <h2>Nothing is executed.</h2>
@@ -319,9 +507,8 @@
     </div>
   </section>
 
-  <!-- 7 -->
   <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">07</span><span class="sect">Pipeline</span></div>
+    <div class="gutter"><span class="idx">06</span><span class="sect">Pipeline</span></div>
     <div class="body">
       <span class="eyebrow">The measurement</span>
       <h2>Four layers. Every one can veto.</h2>
@@ -340,96 +527,8 @@
     </div>
   </section>
 
-  <!-- what the analyzers find -->
-  <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">08</span><span class="sect">Pipeline</span></div>
-    <div class="body">
-      <span class="eyebrow">The instruments</span>
-      <h2>Two tools, two different questions.</h2>
-      <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(270px,1fr))">
-        <div class="card">
-          <h3><span class="mono">pylint</span> — a linter</h3>
-          <p>Reads Python without running it. Reports what is wrong, suspicious,
-            or unmaintainable.</p>
-          <ul style="gap:.35rem;font-size:.86em">
-            <li><span class="mono">unspecified-encoding</span> — a file opened
-              without an encoding; breaks on someone else's machine</li>
-            <li><span class="mono">missing-timeout</span> — an HTTP call that can
-              hang forever</li>
-            <li><span class="mono">unused-variable</span> — a value computed and
-              never read</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3><span class="mono">semgrep</span> — a SAST tool</h3>
-          <p>Matches code against rules describing <em>shapes</em> that create
-            risk.</p>
-          <ul style="gap:.35rem;font-size:.86em">
-            <li><span class="mono">B602</span> — a shell command built with
-              <span class="mono">shell=True</span></li>
-            <li><span class="mono">B410</span> — XML parsed by a library that
-              resolves external entities</li>
-            <li><span class="mono">B113</span> — a request with no timeout</li>
-          </ul>
-        </div>
-      </div>
-      <p><strong>Not one of these fails a test suite.</strong> That is the entire
-        argument for measuring code this way — and also the reason to be careful:
-        semgrep reports a pattern, never a proven exploit.</p>
-    </div>
-  </section>
-
-  <!-- taxonomies -->
-  <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">09</span><span class="sect">Pipeline</span></div>
-    <div class="body">
-      <span class="eyebrow">The part everyone skips</span>
-      <h2 class="wide">A count of linter warnings is not a scientific quantity.</h2>
-      <p>It depends on which checks that tool implements this year, and cannot be
-        compared with a Java or C analyzer. So findings are translated first.</p>
-      <div class="layers">
-        <div class="layer"><span class="n">ODC</span><span class="t">Orthogonal Defect Classification — classifies a defect by <em>the kind of fix it needs</em>: Assignment · Checking · Algorithm · Interface · Function/Class/Object · Timing</span><span class="tool">IBM, 1992</span></div>
-        <div class="layer"><span class="n">CWE</span><span class="t">Common Weakness Enumeration — the industry catalogue of weakness types: CWE-78 command injection, CWE-611 XXE, CWE-400 resource exhaustion</span><span class="tool">MITRE</span></div>
-      </div>
-      <p class="quote">The mappings do double duty: they translate, <strong>and they
-        filter</strong>. A finding with no category is not counted at all — so the
-        spreadsheet defining them is part of the benchmark.</p>
-    </div>
-  </section>
-
-  <!-- 10 -->
-  <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">10</span><span class="sect">Pipeline</span></div>
-    <div class="body">
-      <span class="eyebrow">Anatomy of a finding</span>
-      <h2 class="wide">This is the atom the whole benchmark is built from.</h2>
-      <div class="report">
-        <div class="head">
-          <span class="chip warn">warning</span>
-          <b>B404</b>
-          <span style="color:var(--muted)">CWE-78 · OS command injection</span>
-        </div>
-        <div class="src">
-          <div class="ln"><span>5</span><span>    <span class="k">import</span> os</span></div>
-          <div class="ln hit"><span>6</span><span>    <span class="k">import</span> subprocess</span></div>
-          <div class="ln"><span>7</span><span></span></div>
-          <div class="ln"><span>8</span><span>    proc = subprocess.Popen(</span></div>
-          <div class="ln"><span>9</span><span>        [<span class="s">"apt-key"</span>, <span class="s">"add"</span>, <span class="s">"-"</span>], stdin=subprocess.PIPE,</span></div>
-          <div class="ln"><span>10</span><span>    )</span></div>
-        </div>
-        <div class="foot">
-          <div><span>rule fires on</span> <b>the import statement</b> <span>— not on any misuse</span></div>
-          <div><span>counted as</span> <b>1 vulnerability</b>, <span>severity</span> <b>WARNING</b></div>
-        </div>
-      </div>
-      <p>The argument in one object: is this a security finding, or is it a note that someone
-        chose to shell out? <strong>Your answer changes a published percentage.</strong></p>
-    </div>
-  </section>
-
-  <!-- 9 -->
   <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">11</span><span class="sect">Sampling</span></div>
+    <div class="gutter"><span class="idx">07</span><span class="sect">Sampling</span></div>
     <div class="body">
       <span class="eyebrow">Read this before you read any result</span>
       <h2>These tasks were kept <em>because</em> models failed them.</h2>
@@ -453,48 +552,29 @@
     </div>
   </section>
 
-  <!-- the asymmetry -->
-  <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">12</span><span class="sect">Sampling</span></div>
-    <div class="body">
-      <span class="eyebrow">The asymmetry that makes it testable</span>
-      <h2 class="wide">Three of the five authors <em>defined</em> this benchmark.</h2>
-      <div class="layers">
-        <div class="layer built"><span class="n">×3</span><span class="t">ChatGPT · DeepSeek-Coder · Qwen2.5-Coder<br><span style="color:var(--muted);font-size:.88em">their shared failures are the selection gate</span></span><span class="tool">built it</span></div>
-        <div class="layer ref"><span class="n">1</span><span class="t">Human<br><span style="color:var(--muted);font-size:.88em">its findings never entered the consensus gate</span></span><span class="tool">reference</span></div>
-        <div class="layer test"><span class="n">1</span><span class="t">Claude Opus 4.8<br><span style="color:var(--muted);font-size:.88em">released after the benchmark was built</span></span><span class="tool">under test</span></div>
-      </div>
-      <p>The three at the top fail these tasks <strong>by definition</strong>: the tasks
-        exist because they failed them. Their rates are a ceiling, not an estimate.</p>
-      <p class="quote">Beating the three that built it is the weakest possible
-        result. Reaching the human reference means something.</p>
-    </div>
-  </section>
-
-  <!-- 11 -->
   <section class="slide" data-sect="Cast">
-    <div class="gutter"><span class="idx">13</span><span class="sect">Cast</span></div>
+    <div class="gutter"><span class="idx">08</span><span class="sect">Cast</span></div>
     <div class="body">
-      <span class="eyebrow">The cast</span>
-      <h2>Five authors, the same 200 Python tasks.</h2>
+      <span class="eyebrow">The cast, and the asymmetry that makes it testable</span>
+      <h2>Three of the five authors <em>defined</em> this benchmark.</h2>
       <table>
-        <thead><tr><th>Author</th><th>What it is</th><th style="text-align:right">Year</th><th>Role</th></tr></thead>
+        <thead><tr><th>Author</th><th>What it is</th><th>Role</th></tr></thead>
         <tbody>
-          <tr><td><b>Human</b></td><td>the original implementation, from the repository it was mined from</td><td class="n">—</td><td><span class="chip ok">reference</span></td></tr>
-          <tr><td><b>ChatGPT</b></td><td>gpt-3.5-turbo</td><td class="n">2023</td><td><span class="chip warn">built it</span></td></tr>
-          <tr><td><b>DeepSeek-Coder</b></td><td>33B-Instruct</td><td class="n">2024</td><td><span class="chip warn">built it</span></td></tr>
-          <tr><td><b>Qwen2.5-Coder</b></td><td>32B-Instruct</td><td class="n">2024</td><td><span class="chip warn">built it</span></td></tr>
-          <tr><td><b>Claude Opus 4.8</b></td><td>the submission we score today</td><td class="n">2026</td><td><span class="chip" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">under test</span></td></tr>
+          <tr><td><b>Human</b></td><td>the original, mined from a real repository</td><td><span class="chip ok">reference</span></td></tr>
+          <tr><td><b>ChatGPT</b></td><td>gpt-3.5-turbo · 2023</td><td><span class="chip warn">built it</span></td></tr>
+          <tr><td><b>DeepSeek-Coder</b></td><td>33B-Instruct · 2024</td><td><span class="chip warn">built it</span></td></tr>
+          <tr><td><b>Qwen2.5-Coder</b></td><td>32B-Instruct · 2024</td><td><span class="chip warn">built it</span></td></tr>
+          <tr><td><b>Claude Opus 4.8</b></td><td>our submission · 2026</td><td><span class="chip" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">under test</span></td></tr>
         </tbody>
       </table>
-      <p><strong>No generation today.</strong> Every answer already exists on disk. We are here for the
-        measurement, and 1,000 evaluations of it.</p>
+      <p>The three marked <b>built it</b> fail these tasks <strong>by definition</strong> — that is
+        why the tasks are here. Their rates are a ceiling, not an estimate.</p>
+      <p class="quote">Beating them is the weakest possible result. Reaching the human means something.</p>
     </div>
   </section>
 
-  <!-- the flow -->
   <section class="slide" data-sect="Flow">
-    <div class="gutter"><span class="idx">14</span><span class="sect">Flow</span></div>
+    <div class="gutter"><span class="idx">09</span><span class="sect">Flow</span></div>
     <div class="body">
       <span class="eyebrow">What you will actually run</span>
       <h2>Validate. Evaluate. Compare.</h2>
@@ -510,64 +590,8 @@
     </div>
   </section>
 
-  <!-- 13 -->
-  <section class="slide" data-sect="Today">
-    <div class="gutter"><span class="idx">15</span><span class="sect">Today</span></div>
-    <div class="body">
-      <span class="eyebrow">The plan</span>
-      <h2>Five notebooks, two acts.</h2>
-      <table>
-        <tbody>
-          <tr><td class="mono">00</td><td>Setup · one task, five answers, and why these tasks</td><td class="n">15′</td></tr>
-          <tr><td class="mono">01</td><td>Run the analyzers by hand · a raw message becomes a number</td><td class="n">35′</td></tr>
-          <tr><td class="mono">02</td><td><b>Act I</b> · reproduce the study, and check it against the published results</td><td class="n">30′</td></tr>
-          <tr><td class="mono">03</td><td><b>Act II</b> · submit a model the benchmark has never seen</td><td class="n">30′</td></tr>
-          <tr><td class="mono">04</td><td>Where the differences are · RQ1, RQ2, RQ3 — and three decisions to change</td><td class="n">45′</td></tr>
-        </tbody>
-      </table>
-      <p>Almost every cell is one line and draws a chart. The work you do is in
-        notebook 04, where you move a measurement decision and watch which
-        conclusions survive.</p>
-    </div>
-  </section>
-
-  <!-- 12 -->
-  <section class="slide" data-sect="Today">
-    <div class="gutter"><span class="idx">16</span><span class="sect">Today</span></div>
-    <div class="body">
-      <span class="eyebrow">The three questions</span>
-      <h2>What we're actually asking.</h2>
-      <div class="layers">
-        <div class="layer"><span class="n">RQ1</span><span class="t">Do models write structurally different code from humans?</span><span class="tool">complexity · lexis</span></div>
-        <div class="layer"><span class="n">RQ2</span><span class="t">Do they make different <em>kinds</em> of mistake?</span><span class="tool">odc</span></div>
-        <div class="layer"><span class="n">RQ3</span><span class="t">Do they introduce different weaknesses, at different severity?</span><span class="tool">cwe</span></div>
-      </div>
-      <p>Same 200 tasks for every author, so every comparison is <strong>paired</strong> — we compare
-        answers to the same question, not two populations. That turns out to matter more than any
-        other choice in the pipeline.</p>
-    </div>
-  </section>
-
-  <!-- 13 -->
-  <section class="slide" data-sect="Point">
-    <div class="gutter"><span class="idx">17</span><span class="sect">Point</span></div>
-    <div class="body">
-      <span class="eyebrow">What you're really practising</span>
-      <h2 class="wide">Anyone can run a benchmark. The skill is knowing which of its numbers you would defend.</h2>
-      <ul>
-        <li>A metric that collapses can be measuring <strong>instruction-following</strong>, not quality.</li>
-        <li>A defect can be <strong>inherited from the task</strong>, or manufactured by the evaluation format.</li>
-        <li>An average can reverse depending on <strong>how you aggregate</strong> it.</li>
-        <li>A headline difference can rest on <strong>one permissive rule</strong>.</li>
-        <li>And a pipeline can reproduce perfectly — until it meets a dependency nobody pinned.</li>
-      </ul>
-      <p>Every one of those is in today's data. You'll find them yourself.</p>
-    </div>
-  </section>
-
-  <!-- 14 -->
   <section class="slide" data-sect="Go">
-    <div class="gutter"><span class="idx">18</span><span class="sect">Go</span></div>
+    <div class="gutter"><span class="idx">10</span><span class="sect">Go</span></div>
     <div class="body">
       <span class="eyebrow">Let's go</span>
       <h2>Open a terminal.</h2>
@@ -578,6 +602,8 @@
       <p><code class="mono">verify_setup.py</code> must print <b>Ready.</b> — it checks both analyzers,
         their exact versions, and scores 8 tasks end to end. If it fails, sit next to someone whose
         didn't; the precomputed results ship in the repo and every analysis notebook falls back to them.</p>
+      <p class="quote">Anyone can run a benchmark. The skill is knowing which of its numbers you
+        would defend. That is what the next two hours are for.</p>
       <p class="mono" style="font-size:.82em;color:var(--teal)">then → notebooks/00_setup.ipynb</p>
     </div>
   </section>
@@ -586,7 +612,7 @@
 <div class="rail"><i id="rail"></i></div>
 <nav class="nav" aria-label="Slide navigation">
   <button id="prev" aria-label="Previous slide">‹</button>
-  <span class="count"><span id="cur">1</span>/<span id="tot">18</span></span>
+  <span class="count"><span id="cur">1</span>/<span id="tot">10</span></span>
   <button id="next" aria-label="Next slide">›</button>
 </nav>
 
@@ -642,6 +668,5 @@
   show(isNaN(start) ? 0 : start - 1);
 })();
 </script>
-
 </body>
 </html>

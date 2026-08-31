@@ -213,24 +213,13 @@
     </div>
   </section>
 
-  <!-- 2 -->
   <section class="slide" data-sect="Problem">
     <div class="gutter"><span class="idx">02</span><span class="sect">Problem</span></div>
     <div class="body">
-      <span class="eyebrow">Where the field looks</span>
-      <h2>Almost everything we measure about generated code, we measure in the first minute of its life.</h2>
-      <p><strong>Does it compile? Does it pass the tests? pass@1.</strong> HumanEval, MBPP, MultiPL-E,
-        SWE-bench. Every one of them asks a question about the moment the code is written.</p>
-      <p>That moment is real, and it is not where software spends its money.</p>
-    </div>
-  </section>
-
-  <!-- 3 -->
-  <section class="slide" data-sect="Problem">
-    <div class="gutter"><span class="idx">03</span><span class="sect">Problem</span></div>
-    <div class="body">
-      <span class="eyebrow">Where the cost is</span>
-      <h2 class="wide">Code is written once and read, reviewed, patched and secured for years.</h2>
+      <span class="eyebrow">Where we look, and where the cost is</span>
+      <h2 class="wide">We measure generated code in the first minute of its life. It lives for years.</h2>
+      <p><strong>Does it compile? Does it pass the tests? pass@1.</strong> HumanEval, MBPP, SWE-bench —
+        every one of them asks about the moment the code is written.</p>
       <div class="cols">
         <div class="card">
           <span class="stat teal">60–80%</span>
@@ -240,8 +229,7 @@
         <div class="card">
           <span class="stat teal">Unfixed</span>
           <span class="label">and accumulating</span>
-          <p>A large share of the smells and security issues introduced in AI-authored commits are never
-            repaired; they persist as debt.</p>
+          <p>Smells and security issues introduced in AI-authored commits largely persist as debt.</p>
         </div>
         <div class="card">
           <span class="stat teal">Invisible</span>
@@ -249,13 +237,13 @@
           <p>A missing timeout, an unvalidated path, a swallowed exception. All pass green.</p>
         </div>
       </div>
-      <p>The developer's job moved from <em>authoring</em> to <em>reviewing</em>. Our measurements didn't move with it.</p>
+      <p class="quote">The developer's job moved from <em>authoring</em> to <em>reviewing</em>.
+        Our measurements did not move with it.</p>
     </div>
   </section>
 
-  <!-- 4 -->
   <section class="slide" data-sect="Problem">
-    <div class="gutter"><span class="idx">04</span><span class="sect">Problem</span></div>
+    <div class="gutter"><span class="idx">03</span><span class="sect">Problem</span></div>
     <div class="body">
       <span class="eyebrow">The question for today</span>
       <h2 class="wide">So how <em>would</em> you measure whether generated code is any good — without running it?</h2>
@@ -266,9 +254,8 @@
     </div>
   </section>
 
-  <!-- 5 -->
   <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">05</span><span class="sect">Benchmark</span></div>
+    <div class="gutter"><span class="idx">04</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">One answer</span>
       <h2>CQBench</h2>
@@ -286,9 +273,8 @@
     </div>
   </section>
 
-  <!-- 6 -->
   <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">06</span><span class="sect">Benchmark</span></div>
+    <div class="gutter"><span class="idx">05</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">Scope</span>
       <h2>Nothing is executed.</h2>
@@ -316,9 +302,8 @@
     </div>
   </section>
 
-  <!-- 7 -->
   <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">07</span><span class="sect">Pipeline</span></div>
+    <div class="gutter"><span class="idx">06</span><span class="sect">Pipeline</span></div>
     <div class="body">
       <span class="eyebrow">The measurement</span>
       <h2>Four layers. Every one can veto.</h2>
@@ -337,96 +322,8 @@
     </div>
   </section>
 
-  <!-- what the analyzers find -->
-  <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">08</span><span class="sect">Pipeline</span></div>
-    <div class="body">
-      <span class="eyebrow">The instruments</span>
-      <h2>Two tools, two different questions.</h2>
-      <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(270px,1fr))">
-        <div class="card">
-          <h3><span class="mono">pylint</span> — a linter</h3>
-          <p>Reads Python without running it. Reports what is wrong, suspicious,
-            or unmaintainable.</p>
-          <ul style="gap:.35rem;font-size:.86em">
-            <li><span class="mono">unspecified-encoding</span> — a file opened
-              without an encoding; breaks on someone else's machine</li>
-            <li><span class="mono">missing-timeout</span> — an HTTP call that can
-              hang forever</li>
-            <li><span class="mono">unused-variable</span> — a value computed and
-              never read</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3><span class="mono">semgrep</span> — a SAST tool</h3>
-          <p>Matches code against rules describing <em>shapes</em> that create
-            risk.</p>
-          <ul style="gap:.35rem;font-size:.86em">
-            <li><span class="mono">B602</span> — a shell command built with
-              <span class="mono">shell=True</span></li>
-            <li><span class="mono">B410</span> — XML parsed by a library that
-              resolves external entities</li>
-            <li><span class="mono">B113</span> — a request with no timeout</li>
-          </ul>
-        </div>
-      </div>
-      <p><strong>Not one of these fails a test suite.</strong> That is the entire
-        argument for measuring code this way — and also the reason to be careful:
-        semgrep reports a pattern, never a proven exploit.</p>
-    </div>
-  </section>
-
-  <!-- taxonomies -->
-  <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">09</span><span class="sect">Pipeline</span></div>
-    <div class="body">
-      <span class="eyebrow">The part everyone skips</span>
-      <h2 class="wide">A count of linter warnings is not a scientific quantity.</h2>
-      <p>It depends on which checks that tool implements this year, and cannot be
-        compared with a Java or C analyzer. So findings are translated first.</p>
-      <div class="layers">
-        <div class="layer"><span class="n">ODC</span><span class="t">Orthogonal Defect Classification — classifies a defect by <em>the kind of fix it needs</em>: Assignment · Checking · Algorithm · Interface · Function/Class/Object · Timing</span><span class="tool">IBM, 1992</span></div>
-        <div class="layer"><span class="n">CWE</span><span class="t">Common Weakness Enumeration — the industry catalogue of weakness types: CWE-78 command injection, CWE-611 XXE, CWE-400 resource exhaustion</span><span class="tool">MITRE</span></div>
-      </div>
-      <p class="quote">The mappings do double duty: they translate, <strong>and they
-        filter</strong>. A finding with no category is not counted at all — so the
-        spreadsheet defining them is part of the benchmark.</p>
-    </div>
-  </section>
-
-  <!-- 10 -->
-  <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">10</span><span class="sect">Pipeline</span></div>
-    <div class="body">
-      <span class="eyebrow">Anatomy of a finding</span>
-      <h2 class="wide">This is the atom the whole benchmark is built from.</h2>
-      <div class="report">
-        <div class="head">
-          <span class="chip warn">warning</span>
-          <b>B404</b>
-          <span style="color:var(--muted)">CWE-78 · OS command injection</span>
-        </div>
-        <div class="src">
-          <div class="ln"><span>5</span><span>    <span class="k">import</span> os</span></div>
-          <div class="ln hit"><span>6</span><span>    <span class="k">import</span> subprocess</span></div>
-          <div class="ln"><span>7</span><span></span></div>
-          <div class="ln"><span>8</span><span>    proc = subprocess.Popen(</span></div>
-          <div class="ln"><span>9</span><span>        [<span class="s">"apt-key"</span>, <span class="s">"add"</span>, <span class="s">"-"</span>], stdin=subprocess.PIPE,</span></div>
-          <div class="ln"><span>10</span><span>    )</span></div>
-        </div>
-        <div class="foot">
-          <div><span>rule fires on</span> <b>the import statement</b> <span>— not on any misuse</span></div>
-          <div><span>counted as</span> <b>1 vulnerability</b>, <span>severity</span> <b>WARNING</b></div>
-        </div>
-      </div>
-      <p>The argument in one object: is this a security finding, or is it a note that someone
-        chose to shell out? <strong>Your answer changes a published percentage.</strong></p>
-    </div>
-  </section>
-
-  <!-- 9 -->
   <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">11</span><span class="sect">Sampling</span></div>
+    <div class="gutter"><span class="idx">07</span><span class="sect">Sampling</span></div>
     <div class="body">
       <span class="eyebrow">Read this before you read any result</span>
       <h2>These tasks were kept <em>because</em> models failed them.</h2>
@@ -450,48 +347,29 @@
     </div>
   </section>
 
-  <!-- the asymmetry -->
-  <section class="slide" data-sect="Sampling">
-    <div class="gutter"><span class="idx">12</span><span class="sect">Sampling</span></div>
-    <div class="body">
-      <span class="eyebrow">The asymmetry that makes it testable</span>
-      <h2 class="wide">Three of the five authors <em>defined</em> this benchmark.</h2>
-      <div class="layers">
-        <div class="layer built"><span class="n">×3</span><span class="t">ChatGPT · DeepSeek-Coder · Qwen2.5-Coder<br><span style="color:var(--muted);font-size:.88em">their shared failures are the selection gate</span></span><span class="tool">built it</span></div>
-        <div class="layer ref"><span class="n">1</span><span class="t">Human<br><span style="color:var(--muted);font-size:.88em">its findings never entered the consensus gate</span></span><span class="tool">reference</span></div>
-        <div class="layer test"><span class="n">1</span><span class="t">Claude Opus 4.8<br><span style="color:var(--muted);font-size:.88em">released after the benchmark was built</span></span><span class="tool">under test</span></div>
-      </div>
-      <p>The three at the top fail these tasks <strong>by definition</strong>: the tasks
-        exist because they failed them. Their rates are a ceiling, not an estimate.</p>
-      <p class="quote">Beating the three that built it is the weakest possible
-        result. Reaching the human reference means something.</p>
-    </div>
-  </section>
-
-  <!-- 11 -->
   <section class="slide" data-sect="Cast">
-    <div class="gutter"><span class="idx">13</span><span class="sect">Cast</span></div>
+    <div class="gutter"><span class="idx">08</span><span class="sect">Cast</span></div>
     <div class="body">
-      <span class="eyebrow">The cast</span>
-      <h2>Five authors, the same 200 Python tasks.</h2>
+      <span class="eyebrow">The cast, and the asymmetry that makes it testable</span>
+      <h2>Three of the five authors <em>defined</em> this benchmark.</h2>
       <table>
-        <thead><tr><th>Author</th><th>What it is</th><th style="text-align:right">Year</th><th>Role</th></tr></thead>
+        <thead><tr><th>Author</th><th>What it is</th><th>Role</th></tr></thead>
         <tbody>
-          <tr><td><b>Human</b></td><td>the original implementation, from the repository it was mined from</td><td class="n">—</td><td><span class="chip ok">reference</span></td></tr>
-          <tr><td><b>ChatGPT</b></td><td>gpt-3.5-turbo</td><td class="n">2023</td><td><span class="chip warn">built it</span></td></tr>
-          <tr><td><b>DeepSeek-Coder</b></td><td>33B-Instruct</td><td class="n">2024</td><td><span class="chip warn">built it</span></td></tr>
-          <tr><td><b>Qwen2.5-Coder</b></td><td>32B-Instruct</td><td class="n">2024</td><td><span class="chip warn">built it</span></td></tr>
-          <tr><td><b>Claude Opus 4.8</b></td><td>the submission we score today</td><td class="n">2026</td><td><span class="chip" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">under test</span></td></tr>
+          <tr><td><b>Human</b></td><td>the original, mined from a real repository</td><td><span class="chip ok">reference</span></td></tr>
+          <tr><td><b>ChatGPT</b></td><td>gpt-3.5-turbo · 2023</td><td><span class="chip warn">built it</span></td></tr>
+          <tr><td><b>DeepSeek-Coder</b></td><td>33B-Instruct · 2024</td><td><span class="chip warn">built it</span></td></tr>
+          <tr><td><b>Qwen2.5-Coder</b></td><td>32B-Instruct · 2024</td><td><span class="chip warn">built it</span></td></tr>
+          <tr><td><b>Claude Opus 4.8</b></td><td>our submission · 2026</td><td><span class="chip" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">under test</span></td></tr>
         </tbody>
       </table>
-      <p><strong>No generation today.</strong> Every answer already exists on disk. We are here for the
-        measurement, and 1,000 evaluations of it.</p>
+      <p>The three marked <b>built it</b> fail these tasks <strong>by definition</strong> — that is
+        why the tasks are here. Their rates are a ceiling, not an estimate.</p>
+      <p class="quote">Beating them is the weakest possible result. Reaching the human means something.</p>
     </div>
   </section>
 
-  <!-- the flow -->
   <section class="slide" data-sect="Flow">
-    <div class="gutter"><span class="idx">14</span><span class="sect">Flow</span></div>
+    <div class="gutter"><span class="idx">09</span><span class="sect">Flow</span></div>
     <div class="body">
       <span class="eyebrow">What you will actually run</span>
       <h2>Validate. Evaluate. Compare.</h2>
@@ -507,64 +385,8 @@
     </div>
   </section>
 
-  <!-- 13 -->
-  <section class="slide" data-sect="Today">
-    <div class="gutter"><span class="idx">15</span><span class="sect">Today</span></div>
-    <div class="body">
-      <span class="eyebrow">The plan</span>
-      <h2>Five notebooks, two acts.</h2>
-      <table>
-        <tbody>
-          <tr><td class="mono">00</td><td>Setup · one task, five answers, and why these tasks</td></tr>
-          <tr><td class="mono">01</td><td>Run the analyzers by hand · a raw message becomes a number</td></tr>
-          <tr><td class="mono">02</td><td><b>Act I</b> · meet the cast, and score the four the benchmark ships with</td></tr>
-          <tr><td class="mono">03</td><td><b>Act II</b> · submit a model the benchmark has never seen</td></tr>
-          <tr><td class="mono">04</td><td>Where the differences are · RQ1, RQ2, RQ3 — and three decisions to change</td></tr>
-        </tbody>
-      </table>
-      <p>Almost every cell is one line and draws a chart. The work you do is in
-        notebook 04, where you move a measurement decision and watch which
-        conclusions survive.</p>
-    </div>
-  </section>
-
-  <!-- 12 -->
-  <section class="slide" data-sect="Today">
-    <div class="gutter"><span class="idx">16</span><span class="sect">Today</span></div>
-    <div class="body">
-      <span class="eyebrow">The three questions</span>
-      <h2>What we're actually asking.</h2>
-      <div class="layers">
-        <div class="layer"><span class="n">RQ1</span><span class="t">Do models write structurally different code from humans?</span><span class="tool">complexity · lexis</span></div>
-        <div class="layer"><span class="n">RQ2</span><span class="t">Do they make different <em>kinds</em> of mistake?</span><span class="tool">odc</span></div>
-        <div class="layer"><span class="n">RQ3</span><span class="t">Do they introduce different weaknesses, at different severity?</span><span class="tool">cwe</span></div>
-      </div>
-      <p>Same 200 tasks for every author, so every comparison is <strong>paired</strong> — we compare
-        answers to the same question, not two populations. That turns out to matter more than any
-        other choice in the pipeline.</p>
-    </div>
-  </section>
-
-  <!-- 13 -->
-  <section class="slide" data-sect="Point">
-    <div class="gutter"><span class="idx">17</span><span class="sect">Point</span></div>
-    <div class="body">
-      <span class="eyebrow">What you're really practising</span>
-      <h2 class="wide">Anyone can run a benchmark. The skill is knowing which of its numbers you would defend.</h2>
-      <ul>
-        <li>A metric that collapses can be measuring <strong>instruction-following</strong>, not quality.</li>
-        <li>A defect can be <strong>inherited from the task</strong>, or manufactured by the evaluation format.</li>
-        <li>An average can reverse depending on <strong>how you aggregate</strong> it.</li>
-        <li>A headline difference can rest on <strong>one permissive rule</strong> — or survive losing it.</li>
-        <li>And an analyzer can behave differently <strong>depending on whether you are logged in</strong>.</li>
-      </ul>
-      <p>Every one of those is in today's data. You'll find them yourself.</p>
-    </div>
-  </section>
-
-  <!-- 14 -->
   <section class="slide" data-sect="Go">
-    <div class="gutter"><span class="idx">18</span><span class="sect">Go</span></div>
+    <div class="gutter"><span class="idx">10</span><span class="sect">Go</span></div>
     <div class="body">
       <span class="eyebrow">Let's go</span>
       <h2>Open a terminal.</h2>
@@ -575,6 +397,8 @@
       <p><code class="mono">verify_setup.py</code> must print <b>Ready.</b> — it checks both analyzers,
         their exact versions, and scores 8 tasks end to end. If it fails, sit next to someone whose
         didn't; the precomputed results ship in the repo and every analysis notebook falls back to them.</p>
+      <p class="quote">Anyone can run a benchmark. The skill is knowing which of its numbers you
+        would defend. That is what the next two hours are for.</p>
       <p class="mono" style="font-size:.82em;color:var(--teal)">then → notebooks/00_setup.ipynb</p>
     </div>
   </section>
@@ -583,7 +407,7 @@
 <div class="rail"><i id="rail"></i></div>
 <nav class="nav" aria-label="Slide navigation">
   <button id="prev" aria-label="Previous slide">‹</button>
-  <span class="count"><span id="cur">1</span>/<span id="tot">18</span></span>
+  <span class="count"><span id="cur">1</span>/<span id="tot">10</span></span>
   <button id="next" aria-label="Next slide">›</button>
 </nav>
 
