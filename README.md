@@ -203,7 +203,7 @@ participants find them rather than being told:
 - **Not every counted defect was authored.** `too-many-arguments` fires
   identically for the human and Claude — both inherit it from the requested
   signature. `unused-argument` is inflated for everyone because methods are
-  scored outside their class. Four such symbols account for 35–49% of every
+  scored outside their class. Four such symbols account for 25–49% of every
   author's findings; removing them leaves the *comparisons* between authors
   intact.
 - **Ratio of means ≠ mean of ratios.** Claude's size relative to the human is

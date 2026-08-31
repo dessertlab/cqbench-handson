@@ -185,9 +185,15 @@ display(pd.DataFrame(gate_rows).T)
 #
 # Now we run the analyzer ourselves, exactly as the evaluator does. Let's use
 # Claude's answer — the longest and most careful of the five.
+#
+# Pylint reports a **line number** for every message, so put the code on screen
+# first. Every finding below can be checked against the line it came from.
 
 # %%
 CODE = answers["claude"]
+
+for n, line in enumerate(CODE.splitlines(), 1):
+    print(f"{n:3d} | {line}")
 
 with tempfile.TemporaryDirectory() as directory:
     target = pathlib.Path(directory) / "submission.py"
@@ -203,6 +209,20 @@ print(f"Pylint emitted {len(raw)} messages:\n")
 display(raw)
 
 # %% [markdown]
+# **Read the `line` column against the listing above before going on.** Two of
+# these are worth finding by eye now, because they come back in notebook 04:
+#
+# * `unused-argument` on **line 1** is `self`. The signature was *required* by
+#   the task, and the function is scored outside its class, so `self` has
+#   nothing to be used for.
+# * `unused-variable` on **line 27** is `out` in `out, err = proc.communicate(...)`.
+#   Claude captures stdout and never reads it. That one is Claude's.
+#
+# Same symbol family, two different situations: one is an artifact of how the
+# benchmark scores, the other is a real (small) defect. **The analyzer cannot
+# tell them apart, and neither can the pipeline.** Hold that thought — filter 1
+# is about to drop some artifacts and keep others.
+#
 # Pylint said a lot. Most of it is not what the benchmark means by "a defect".
 # Three filters run, in order.
 #
