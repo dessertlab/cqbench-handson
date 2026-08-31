@@ -2,7 +2,6 @@
 # # 00 — Setup, and what a benchmark task actually is
 #
 # **Session:** Benchmarking the Quality of AI Code Generators · LLMA4SE 2026
-# **Time:** ~15 minutes
 #
 # The benchmark is **CQBench v1**, released with *"What is the Difference
 # Between Me and You? Benchmarking the Quality Gap Between Human-Written and
@@ -215,7 +214,7 @@ display(roles)
 # %% [markdown]
 # ## 5. A quick look around
 #
-# **Exercise (3 minutes).** Pick another task and read its five answers. Some
+# **Exercise.** Pick another task and read its five answers. Some
 # suggestions with different flavours:
 #
 # * `python:gp247196` — a raw HTTP GET; watch what each author does about TLS

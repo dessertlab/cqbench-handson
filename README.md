@@ -55,16 +55,16 @@ table prints it.
 
 ## What you will actually do
 
-Two acts. First we reproduce the published research and check our machine
-against it; then we submit a model the benchmark has never seen.
+Two acts. First we meet the five code authors and score the four the benchmark
+ships with; then we submit a model it has never seen.
 
-| # | Notebook | Time | What happens |
-|---|---|---|---|
-| 00 | `00_setup.ipynb` | 15 min | Check the environment, read one task and its five answers, and see why *these* 200 tasks are in the benchmark |
-| 01 | `01_measurement_pipeline.ipynb` | 35 min | What the four tools do, then run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
-| 02 | `02_reproduce_the_study.ipynb` | 9 min | **Act I** — meet the five authors and the three roles they occupy, then score the four baselines the benchmark ships with |
-| 03 | `03_evaluate_a_new_model.ipynb` | 30 min | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots, then ask whether the benchmark still bites a model built after it |
-| 04 | `04_where_the_differences_are.ipynb` | 45 min | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move three measurement decisions and see which conclusions survive |
+| # | Notebook | What happens |
+|---|---|---|
+| 00 | `00_setup.ipynb` | Check the environment, read one task and its five answers, and see why *these* 200 tasks are in the benchmark |
+| 01 | `01_measurement_pipeline.ipynb` | What the four tools do, then run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
+| 02 | `02_reproduce_the_study.ipynb` | **Act I** — meet the five authors and the three roles they occupy, then score the four baselines the benchmark ships with |
+| 03 | `03_evaluate_a_new_model.ipynb` | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots, then ask whether the benchmark still bites a model built after it |
+| 04 | `04_where_the_differences_are.ipynb` | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move three measurement decisions and see which conclusions survive |
 
 Almost every cell is a single call that draws a chart; the plumbing lives in
 `cqhandson/figures.py`, which is short and meant to be opened. The exception is

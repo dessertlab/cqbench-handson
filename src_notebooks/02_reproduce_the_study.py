@@ -1,14 +1,13 @@
 # %% [markdown]
 # # 02 — Meet the cast, and score them
 #
-# **Time:** ~9 minutes · **You run cells and read charts. No code to write.**
+# **You run cells and read charts. No code to write.**
 #
 # Two things happen here, and the first one governs how you read every chart for
 # the rest of the day:
 #
 # 1. **who the five authors are** — and why they are not five peers;
-# 2. **the benchmark runs** — 800 evaluations on your laptop, in about two
-#    minutes.
+# 2. **the benchmark runs** — 800 evaluations, on your laptop.
 #
 # We score the **four authors the benchmark ships with**: the human reference
 # and the three models that built it. Claude does not appear here — it arrives

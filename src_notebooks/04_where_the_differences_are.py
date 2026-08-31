@@ -1,7 +1,7 @@
 # %% [markdown]
 # # 04 — Where the differences actually are
 #
-# **Time:** ~45 minutes · **Charts to read, and three parameters to change.**
+# **Charts to read, and three parameters to change.**
 #
 # Notebook 03 gave a verdict: the frontier model matches the human reference on
 # maintainability and not on security. This notebook asks *what the code looks

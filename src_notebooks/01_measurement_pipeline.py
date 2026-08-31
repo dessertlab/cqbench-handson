@@ -1,7 +1,6 @@
 # %% [markdown]
 # # 01 — From a raw analyzer message to a benchmark number
 #
-# **Time:** ~35 minutes
 #
 # In notebook 02 you will run the whole benchmark and get a table of percentages.
 # This notebook is the one that decides whether you can *trust* that table,
@@ -426,7 +425,7 @@ display(pd.DataFrame({ch.AUTHOR_LABELS[a]: clean_strict(a) for a in ch.AUTHOR_OR
 # before you rank anything.
 
 # %% [markdown]
-# ## Exercise — move a boundary, watch the number move (5 minutes)
+# ## Exercise — move a boundary, watch the number move
 #
 # Every filter above is a decision someone made. Change one and see what happens
 # to Claude's defect count.

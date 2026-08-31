@@ -1,7 +1,7 @@
 # %% [markdown]
 # # 03 — Evaluating a model the benchmark has never seen
 #
-# **Time:** ~30 minutes · **This is the hands-on.**
+# **This is the hands-on.**
 #
 # Notebook 02 scored the four authors the benchmark ships with, and showed how
 # much of a count can hang on one line of the evaluator. Now we use the
