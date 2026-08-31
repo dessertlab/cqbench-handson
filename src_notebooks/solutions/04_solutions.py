@@ -65,7 +65,7 @@ display(disqualified)
 #
 # The lesson generalises: when you add a filter to a composite metric, measure
 # how much of it is *new* rejection rather than assuming it earns its place. This
-# one is doing much less work than its prominence in the paper suggests.
+# one is doing much less work than its prominence in the table suggests.
 
 # %% [markdown]
 # ## Exercise 2 — which findings did the author actually cause?

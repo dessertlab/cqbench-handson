@@ -228,7 +228,7 @@ display(raw)
 #
 # ### Filter 1 — the exclusion list
 #
-# The study excludes symbols that are noisy, stylistic, or an artifact of
+# The benchmark excludes symbols that are noisy, stylistic, or an artifact of
 # analyzing a *fragment* rather than a program. `missing-module-docstring` fires
 # on every single submission because a bare function is not a module.
 # `undefined-variable` and `import-error` fire because the surrounding file, its
@@ -342,9 +342,14 @@ for finding in report["results"]:
 #   severity**.
 #
 # > Did you notice `extra['lines']` above? It should hold the source text
-# > Semgrep matched — and instead it says `'requires login'`. CQBench v1 keyed
-# > de-duplication on that field. Park the observation; notebook 02 shows what
-# > it does to a count, and what it cannot do to a rate.
+# > Semgrep matched — and instead it says `'requires login'`. Semgrep redacts
+# > that field for registry-sourced rules unless the CLI is authenticated, so on
+# > a fresh install it is the same constant for **every finding**.
+# >
+# > Build a de-duplication key on a field like that and it stops discriminating
+# > silently: distinct findings collapse, counts drop, and nothing errors. It is
+# > worth asking of every pipeline you publish from — *does any tool in here
+# > behave differently when logged in?* **Pin more than versions.**
 #
 # The single finding on Claude's answer is `B404`: *"Consider possible security
 # implications associated with the subprocess module"*, CWE-78 (OS command
@@ -357,8 +362,8 @@ for finding in report["results"]:
 # this task, "vulnerable" mostly means "chose to call an external program".
 #
 # **This is the honest reading of a SAST-based benchmark: it measures
-# *risk-associated patterns*, not exploitable bugs.** The paper says exactly
-# this. Whether the pattern is a fair proxy is a question you get to argue about.
+# *risk-associated patterns*, not exploitable bugs.** Whether that pattern is a
+# fair proxy for risk is a question you get to argue about — and should.
 
 # %%
 from support.rq4_build_table import normalized_cwes
@@ -431,7 +436,7 @@ display(pd.DataFrame({ch.AUTHOR_LABELS[a]: clean_strict(a) for a in ch.AUTHOR_OR
 # recompute `defects_total`.
 
 # %%
-# TODO: build `my_exclusions` = the study's list plus "unused-argument",
+# TODO: build `my_exclusions` = the benchmark's list plus "unused-argument",
 #       re-apply filters 1-3 to `raw`, and print the new defects_total.
 #
 # my_exclusions = ...
@@ -459,5 +464,5 @@ display(pd.DataFrame({ch.AUTHOR_LABELS[a]: clean_strict(a) for a in ch.AUTHOR_OR
 # 3. SAST findings are **risk patterns, not exploits**. `import subprocess` is a
 #    finding; a shell injection is also a finding.
 #
-# Next: `02_reproduce_the_study.ipynb` — the same pipeline, 800 times, and a
-# check that your machine agrees with the reference results.
+# Next: `02_reproduce_the_study.ipynb` — the same pipeline, 800 times, and the
+# five authors you met in notebook 00, scored.

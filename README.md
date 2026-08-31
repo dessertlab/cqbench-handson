@@ -62,7 +62,7 @@ against it; then we submit a model the benchmark has never seen.
 |---|---|---|---|
 | 00 | `00_setup.ipynb` | 15 min | Check the environment, read one task and its five answers, and see why *these* 200 tasks are in the benchmark |
 | 01 | `01_measurement_pipeline.ipynb` | 35 min | What the four tools do, then run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
-| 02 | `02_reproduce_the_study.ipynb` | 17 min | **Act I** — meet the five authors and the three roles they occupy, score the four shipped baselines live, then read the de-duplication key that was quietly moving a third of the counts |
+| 02 | `02_reproduce_the_study.ipynb` | 9 min | **Act I** — meet the five authors and the three roles they occupy, then score the four baselines the benchmark ships with |
 | 03 | `03_evaluate_a_new_model.ipynb` | 30 min | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots, then ask whether the benchmark still bites a model built after it |
 | 04 | `04_where_the_differences_are.ipynb` | 45 min | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move three measurement decisions and see which conclusions survive |
 
@@ -120,17 +120,15 @@ cqbench-handson/
 │   ├── tasks.jsonl            200 Python tasks: prompt, signature, stratum
 │   ├── references.jsonl       human structural + complexity reference per task
 │   ├── predictions/*.jsonl    the five authors' submissions
-│   ├── frozen/*.jsonl         the study's own frozen results (see below)
-│   └── reference_check/       8-task slice used for the equivalence check
+│   └── reference_check/       8-task slice used by verify_setup.py
 ├── results/
 │   ├── precomputed/*.jsonl    shipped fallback (identical pipeline)
-│   ├── reference_check/       output of the stock `cqbench evaluate`
 │   └── live/                  your run lands here
 ├── cqhandson/                 helper package
 │   ├── runner.py              batched evaluator — see "Why it is fast"
 │   ├── metrics.py             the scoring vocabulary, on tidy frames
 │   ├── loading.py             data loading
-│   └── viz.py                 paper palette and figure defaults
+│   └── viz.py                 role palette and figure defaults
 ├── notebooks/                 the session
 ├── slides/index.html          opening framing deck
 └── vendor/cqbench-v1/         the CQBench v1 evaluator, one patch (GPL-3.0)
@@ -181,10 +179,6 @@ rules every time and makes a ~25 s network version check.
 pylint run per 200 files, structural analysis in a process pool. Same rules,
 same exclusions, same de-duplication — **1,000 evaluations in ~100 s**.
 
-Notebook 02 proves the equivalence rather than asserting it: it diffs every
-scored field of the fast runner against `results/reference_check/`, produced by
-the reference evaluator. The expected answer is zero differences.
-
 ## What the session turns up
 
 Not a scripted tour — these come out of the data, and the exercises are built so
@@ -217,25 +211,6 @@ participants find them rather than being told:
 - **A pipeline can reproduce perfectly until it meets a dependency nobody
   pinned.** A de-duplication key whose only discriminating field is redacted
   unless the analyzer is logged in — see `vendor/PATCHES.md`.
-
-## Optional: check this machine against the reference
-
-`data/frozen/` holds the study's own per-task results for these same 200 tasks,
-produced by its pipeline. Nothing in the session needs them, but if you want the
-deepest possible check that your environment is sound — far beyond what
-`verify_setup.py` does — score the baselines and compare every field:
-
-```python
-import cqhandson as ch
-ch.reproduce.agreement_table()          # per-author agreement, as fractions
-```
-
-Structural verdicts agree on 100% of tasks, defect counts on 99–100%,
-vulnerability counts on 95% or more, and `clean_strict@1` is identical to the
-decimal. The residual is what two independent implementations of the same
-measurement look like: the reference numbers come from the study's pipeline, not
-from this evaluator. **Diff your tooling against a reference before you trust
-it** — it is the cheapest habit in empirical software engineering.
 
 ## Licence and attribution
 

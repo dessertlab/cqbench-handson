@@ -45,7 +45,7 @@ from .viz import (  # noqa: E402
     author_color,
     style,
 )
-from . import figures, reproduce, whatif  # noqa: E402,F401
+from . import figures, whatif  # noqa: E402,F401
 
 __all__ = [
     "REPO", "VENDOR",
@@ -55,5 +55,5 @@ __all__ = [
     "results_frame", "show_code", "read_jsonl", "results_source",
     "ODC_COLUMNS", "ODC_LABELS", "headline_table", "paired_bootstrap_ci", "rate",
     "PALETTE", "AUTHOR_COLORS", "ROLE_COLORS", "author_color", "style",
-    "figures", "reproduce", "whatif",
+    "figures", "whatif",
 ]

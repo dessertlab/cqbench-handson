@@ -44,7 +44,7 @@ print(f"analyzers  : {runner.check_analyzers()}")
 # from a terminal — it says exactly which piece is missing.
 #
 # > **Those two version numbers are data, not trivia.** `pylint 3.3.6` and
-# > `semgrep 1.120.0` are the versions the study ran. Pylint adds and retires
+# > `semgrep 1.120.0` are the versions this benchmark is pinned to. Pylint adds and retires
 # > checks between releases; Semgrep ships new rules. Run this benchmark with
 # > different analyzer versions and you get different numbers for the same code.
 # > A static-analysis benchmark is only reproducible if the analyzers are pinned —
@@ -186,7 +186,7 @@ display(roles)
 # released *after* the benchmark was built. Those two are outside the
 # construction, which is the only reason anything here can be tested.
 #
-# Notebook 02 scores the four authors the study measured; notebook 03 then
+# Notebook 02 scores the four authors the benchmark ships with; notebook 03 then
 # submits **Claude as a model under test**. Keep the consequence in view:
 #
 # > Beating the three models that built the benchmark is the weakest possible

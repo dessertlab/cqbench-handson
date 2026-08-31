@@ -5,7 +5,7 @@
 #
 # Notebook 03 gave a verdict: the frontier model matches the human reference on
 # maintainability and not on security. This notebook asks *what the code looks
-# like* underneath that verdict, along the paper's three research questions:
+# like* underneath that verdict, along three questions:
 #
 # | | question |
 # |---|---|
@@ -69,8 +69,8 @@ figures.plot_structural_profile(results);
 # The aqua line is the human implementation.
 #
 # The 2023–24 models sit at 0.5–0.9 across the board. Claude sits at 0.86–1.12 —
-# structurally, it writes human-scale code. This is the paper's finding that
-# Claude reaches 98.7% of human lines of code, reproduced from raw code.
+# structurally, it writes human-scale code: on these tasks Claude reaches
+# **98.7%** of the human implementations' lines of code.
 #
 # **Watch the `n` in the legend.** ChatGPT's dots are computed on **12
 # surviving outputs**, because the rest never cleared the structural gate. They

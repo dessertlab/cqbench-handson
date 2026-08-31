@@ -211,80 +211,7 @@ def plot_forest(comparison: pd.DataFrame, title: str,
 
 
 # --------------------------------------------------------------------------- #
-# 4. Reproduction check
-# --------------------------------------------------------------------------- #
-def plot_reproduction(agreement: pd.DataFrame, save: str | None = "reproduction"):
-    """How closely our run matches the study's published per-task results.
-
-    `agreement` must carry one row per author with the three agreement columns
-    as fractions.
-    """
-    columns = ["structural agree", "defect count agree", "vuln count agree"]
-    labels = ["structural verdict", "defect counts", "vulnerability counts"]
-    fig, axis = plt.subplots(figsize=(9.5, 4))
-
-    x = np.arange(len(agreement))
-    width = 0.26
-    shades = CONSTRUCTION_RAMP
-    for i, (column, label) in enumerate(zip(columns, labels)):
-        values = agreement[column].to_numpy() * 100
-        bars = axis.bar(x + (i - 1) * (width + 0.02), values, width,
-                        color=shades[i], label=label)
-        for bar in bars:
-            axis.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
-                      f"{bar.get_height():.0f}", ha="center", fontsize=8, color=INK)
-
-    axis.set_xticks(x, agreement.index)
-    axis.set_ylim(0, 122)
-    axis.set_ylabel("% of tasks where we agree exactly")
-    axis.set_title("Our run against the study's own published results")
-    axis.axhline(100, color=STATUS["good"], ls="--", lw=1.5, zorder=0)
-    axis.annotate("perfect agreement", (len(agreement) - 0.52, 110), ha="right",
-                  fontsize=8, color=STATUS["good"])
-    axis.grid(axis="x", visible=False)
-    axis.legend(ncols=3, loc="lower center", bbox_to_anchor=(0.5, -0.32))
-    fig.tight_layout()
-    return _save(fig, save)
-
-
-def plot_dedup_effect(effect, save: str | None = "dedup_effect"):
-    """Two panels: what the de-duplication key moved, and what it did not.
-
-    `effect` is the frame returned by `cqhandson.reproduce.dedup_effect`.
-    """
-    fig, (left, right) = plt.subplots(1, 2, figsize=(11.5, 4.2))
-    x = np.arange(len(effect))
-    labels = [i.replace(" ", "\n") for i in effect.index]
-
-    width = 0.36
-    for i, (column, label, shade) in enumerate([
-            ("vulnerabilities, released key", "released v1 key", CONSTRUCTION_RAMP[0]),
-            ("vulnerabilities, fixed key", "position key (shipped here)", CONSTRUCTION_RAMP[1])]):
-        bars = left.bar(x + (i - 0.5) * (width + 0.02), effect[column], width,
-                        color=shade, label=label)
-        _bar_labels(left, bars, "{:.0f}", pad=2)
-    left.set_xticks(x, labels, fontsize=8)
-    left.set_ylim(0, effect["vulnerabilities, fixed key"].max() * 1.22)
-    left.set_ylabel("total findings kept")
-    left.set_title("Counts move", loc="left")
-    left.grid(axis="x", visible=False)
-    left.legend(loc="upper left", fontsize=8)
-
-    colors = [author_color(a) for a in AUTHOR_ORDER[:len(effect)]]
-    bars = right.bar(x, effect["% of tasks flagged"], width * 1.6, color=colors)
-    _bar_labels(right, bars, "{:.1f}", pad=0.6)
-    right.set_xticks(x, labels, fontsize=8)
-    right.set_ylim(0, max(effect["% of tasks flagged"]) * 1.18)
-    right.set_ylabel("% of tasks with \u22651 finding")
-    right.set_title("Rates do not — identical under both keys", loc="left")
-    right.grid(axis="x", visible=False)
-
-    fig.tight_layout()
-    return _save(fig, save)
-
-
-# --------------------------------------------------------------------------- #
-# 5. RQ1 — structure and style
+# 4. RQ1 — structure and style
 # --------------------------------------------------------------------------- #
 def _paired(results: pd.DataFrame, column: str):
     """Per-task values and a strict-nontrivial mask, wide by author."""
@@ -431,7 +358,7 @@ def plot_lexical(results: pd.DataFrame, authors=("human", "dsc", "qwen", "claude
 
 
 # --------------------------------------------------------------------------- #
-# 6. RQ2 — defects
+# 5. RQ2 — defects
 # --------------------------------------------------------------------------- #
 BURDEN_BINS = [(0, 0, "none"), (1, 1, "1"), (2, 2, "2"),
                (3, 4, "3–4"), (5, 99, "5 or more")]
@@ -527,7 +454,7 @@ def plot_top_symbols(results: pd.DataFrame, top: int = 10,
 
 
 # --------------------------------------------------------------------------- #
-# 7. RQ3 — security
+# 6. RQ3 — security
 # --------------------------------------------------------------------------- #
 def plot_security(results: pd.DataFrame, save: str | None = "security"):
     """Incidence and severity side by side, both coloured by role."""

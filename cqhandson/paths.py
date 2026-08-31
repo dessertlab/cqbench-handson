@@ -10,7 +10,6 @@ DATA = REPO / "data"
 TASKS = DATA / "tasks.jsonl"
 REFERENCES = DATA / "references.jsonl"
 PREDICTIONS = DATA / "predictions"
-FROZEN = DATA / "frozen"
 
 RESULTS = REPO / "results"
 LIVE = RESULTS / "live"              # what you produce during the session
