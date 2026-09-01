@@ -70,9 +70,11 @@ Almost every cell is a single call that draws a chart; the plumbing lives in
 `cqhandson/figures.py`, which is short and meant to be opened. The exception is
 notebook 01, where the code *is* the lesson: you run the analyzers yourself.
 
-The exercises are in notebook 04 and are one-line changes with a visual answer —
-move the complexity floor, drop a group of linter checks, remove a security rule.
-Worked answers in `notebooks/solutions/`.
+Notebook 04 ends with one hands-on exercise and one demonstration, both one-line
+changes with a visual answer: move the complexity floor, then remove the loudest
+security rule and see whether the headline survives. It closes with a plain-words
+verdict on the model under test and a set of open questions about where the
+benchmark itself is attackable. Worked answers in `notebooks/solutions/`.
 
 ---
 
@@ -181,7 +183,7 @@ same exclusions, same de-duplication — **1,000 evaluations in ~100 s**.
 
 ## What the session turns up
 
-Not a scripted tour — these come out of the data, and the exercises are built so
+Not a scripted tour — these come out of the data, and notebook 04 is built so
 participants find them rather than being told:
 
 - **A composite metric can collapse for the wrong reason.** ChatGPT's
@@ -200,7 +202,7 @@ participants find them rather than being told:
   author's findings; removing them leaves the *comparisons* between authors
   intact.
 - **Ratio of means ≠ mean of ratios.** Claude's size relative to the human is
-  0.99 one way and 1.38 the other. The exercise resolves it: every model is
+  0.99 one way and 1.38 the other. The size figure resolves it: every model is
   verbose on short functions and compressed on long ones.
 - **Attack your own headline before someone else does.** `B404` fires on
   `import subprocess` and is the loudest rule against the submission — exactly
