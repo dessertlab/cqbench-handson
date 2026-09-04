@@ -239,13 +239,8 @@ for key, hit, label in [("consensus_cwes", lambda row: set(row["cwes"]), "weakne
           f"[{stats['ci_lo']:+.3f}; {stats['ci_hi']:+.3f}]")
 
 # %% [markdown]
-# Both gaps are real — neither interval touches zero — but they are not the same
-# size:
-#
-# | | Claude | human | gap | interval |
-# |---|---:|---:|---:|---|
-# | weakness class (CWE), n=100 | 49% | 22% | **+0.270** | [+0.170; +0.370] |
-# | defect class (ODC), n=177 | 59% | 51% | **+0.085** | [+0.017; +0.147] |
+# Both gaps are real — neither interval touches zero — but they are nowhere near
+# the same size, and that difference is the finding.
 #
 # **The security side of the selection transfers; the defect side barely does.**
 # On CWEs the task predicts a frontier model's weakness more than twice as often
