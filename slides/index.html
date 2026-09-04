@@ -372,8 +372,17 @@
     font-family:"IBM Plex Mono",monospace; font-size:.86em; background:var(--surface);
     border:1px solid var(--rule); border-radius:3px; padding:.85rem 1rem; max-width:56ch;
     box-shadow:var(--shadow); white-space:pre; overflow-x:auto; color:var(--ink);
+    flex-shrink:0;
   }
   .cmd .p{color:var(--teal)}
+  .code{
+    font-family:"IBM Plex Mono",monospace; font-size:.66em; line-height:1.5;
+    background:var(--paper); border:1px solid var(--rule); border-radius:3px;
+    padding:.6rem .7rem; white-space:pre-wrap; word-break:break-word; color:var(--ink);
+    margin:.45rem 0 .5rem; flex-shrink:0;
+  }
+  .code b{color:var(--err); font-weight:600}
+  .verdict{font-family:"IBM Plex Mono",monospace; font-size:.74em; margin:0}
 
   /* ---------- chrome ---------- */
   .rail{position:fixed; left:0; right:0; bottom:0; height:2px; background:var(--rule); z-index:5}
@@ -418,8 +427,33 @@
   </section>
 
   <!-- 2 -->
+  <section class="slide" data-sect="Who">
+    <div class="gutter"><span class="idx">02</span><span class="sect">Who</span></div>
+    <div class="body">
+      <span class="eyebrow">Before we start</span>
+      <h2>Pietro Liguori</h2>
+      <p class="lead">Assistant Professor at DIETI, University of Naples Federico II,
+        and a member of the <b>DESSERT Lab</b>.</p>
+      <div class="cols">
+        <div class="card"><span class="label">AI code generation</span>
+          <p>Correctness, robustness and security of what language models write. Benchmarks and metrics.</p></div>
+        <div class="card"><span class="label">Offensive security via AI</span>
+          <p>Exploits, shellcode and PowerShell from natural language — and what a model should not produce.</p></div>
+        <div class="card"><span class="label">Software reliability</span>
+          <p>Fault injection and failure analysis in large cloud platforms. Where I come from.</p></div>
+      </div>
+      <p>Ph.D. here under Domenico Cotroneo, then a year at UNC Charlotte with Bojan Cukic.
+        Most recently <b>Redlyne</b>: a VS Code extension that patches vulnerabilities in
+        AI-generated Python, locally.</p>
+      <p class="quote">Residual failure mode: an unhealthy passion for breaking systems —
+        especially AI. Which is what we are doing today.</p>
+      <p class="mono" style="font-size:.74em;color:var(--teal)">pietro.liguori@unina.it &nbsp;·&nbsp; dessertlab.github.io</p>
+    </div>
+  </section>
+
+  <!-- 3 -->
   <section class="slide" data-sect="Problem">
-    <div class="gutter"><span class="idx">02</span><span class="sect">Problem</span></div>
+    <div class="gutter"><span class="idx">03</span><span class="sect">Problem</span></div>
     <div class="body">
       <span class="eyebrow">Where we look</span>
       <h2 class="wide">Every code benchmark you know asks one question: <em>does it run?</em></h2>
@@ -432,9 +466,9 @@
     </div>
   </section>
 
-  <!-- 3 -->
+  <!-- 4 -->
   <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">03</span><span class="sect">Benchmark</span></div>
+    <div class="gutter"><span class="idx">04</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">Why another benchmark</span>
       <h2>Correctness is not quality.</h2>
@@ -452,9 +486,9 @@
     </div>
   </section>
 
-  <!-- 4 -->
+  <!-- 5 -->
   <section class="slide" data-sect="Benchmark">
-    <div class="gutter"><span class="idx">04</span><span class="sect">Benchmark</span></div>
+    <div class="gutter"><span class="idx">05</span><span class="sect">Benchmark</span></div>
     <div class="body">
       <span class="eyebrow">One answer</span>
       <h2>CQBench</h2>
@@ -472,9 +506,44 @@
     </div>
   </section>
 
-  <!-- 5 -->
+  <!-- 6 -->
+  <section class="slide" data-sect="Example">
+    <div class="gutter"><span class="idx">06</span><span class="sect">Example</span></div>
+    <div class="body">
+      <span class="eyebrow">What a task actually looks like</span>
+      <h2 class="wide">One task. Two answers. One verdict each.</h2>
+      <div class="cmd" style="max-width:none;font-size:.7em;white-space:pre-wrap"><span class="p">task</span>  def evaluate(self, task, expression)   <span class="p">spec</span>  “Evaluate the given expression in the context of the given task.”</div>
+      <div class="cols" style="grid-template-columns:1fr 1fr;margin-top:.9rem">
+        <div class="card">
+          <span class="label">Human — the original</span>
+          <div class="code">def evaluate(self, task, expression):
+    if isinstance(expression, Operator):
+        return expression._matches(task)
+    else:
+        return self._eval(task, expression,
+                          **task.data)</div>
+          <p class="verdict" style="color:var(--teal)"><b>clean_strict@1 ✓</b> &nbsp; 0 defects · 0 weaknesses</p>
+        </div>
+        <div class="card">
+          <span class="label">Claude Opus 4.8 — under test</span>
+          <div class="code">def evaluate(self, task, expression):
+    """Evaluate the given expression …"""
+    context = self.get_context(task) \
+        if hasattr(self, "get_context") else {}
+    return <b>eval</b>(expression,
+        {"__builtins__": {}}, dict(context))</div>
+          <p class="verdict" style="color:var(--err)"><b>clean_strict@1 ✗</b> &nbsp; <span class="mono">eval-used</span> · <span class="mono">CWE-95</span></p>
+        </div>
+      </div>
+      <p>Both clear every structural check. The score turns on two named things — and the
+        model reached for <span class="mono">eval</span> where the human reached for a method
+        the codebase already had.</p>
+    </div>
+  </section>
+
+  <!-- 7 -->
   <section class="slide" data-sect="Construction">
-    <div class="gutter"><span class="idx">05</span><span class="sect">Construction</span></div>
+    <div class="gutter"><span class="idx">07</span><span class="sect">Construction</span></div>
     <div class="body">
       <span class="eyebrow">How the tasks were chosen</span>
       <h2 class="wide">A task is here <em>because</em> models already failed it.</h2>
@@ -493,9 +562,9 @@
     </div>
   </section>
 
-  <!-- 6 -->
+  <!-- 8 -->
   <section class="slide" data-sect="Construction">
-    <div class="gutter"><span class="idx">06</span><span class="sect">Construction</span></div>
+    <div class="gutter"><span class="idx">08</span><span class="sect">Construction</span></div>
     <div class="body">
       <span class="eyebrow">The 200 tasks you will score</span>
       <h2>1,972 findings put them there.</h2>
@@ -511,9 +580,9 @@
     </div>
   </section>
 
-  <!-- 7 -->
+  <!-- 9 -->
   <section class="slide" data-sect="Scope">
-    <div class="gutter"><span class="idx">07</span><span class="sect">Scope</span></div>
+    <div class="gutter"><span class="idx">09</span><span class="sect">Scope</span></div>
     <div class="body">
       <span class="eyebrow">Scope</span>
       <h2>Nothing is executed.</h2>
@@ -541,9 +610,9 @@
     </div>
   </section>
 
-  <!-- 8 -->
+  <!-- 10 -->
   <section class="slide" data-sect="Pipeline">
-    <div class="gutter"><span class="idx">08</span><span class="sect">Pipeline</span></div>
+    <div class="gutter"><span class="idx">10</span><span class="sect">Pipeline</span></div>
     <div class="body">
       <span class="eyebrow">The measurement</span>
       <h2>Four layers. Every one can veto.</h2>
@@ -562,9 +631,9 @@
     </div>
   </section>
 
-  <!-- 9 -->
+  <!-- 11 -->
   <section class="slide" data-sect="Reading">
-    <div class="gutter"><span class="idx">09</span><span class="sect">Reading</span></div>
+    <div class="gutter"><span class="idx">11</span><span class="sect">Reading</span></div>
     <div class="body">
       <span class="eyebrow">Read this before you read any result</span>
       <h2 class="wide">Failures are enriched here by design.</h2>
@@ -584,11 +653,11 @@
     </div>
   </section>
 
-  <!-- 10 -->
+  <!-- 12 -->
   <section class="slide" data-sect="Cast">
-    <div class="gutter"><span class="idx">10</span><span class="sect">Cast</span></div>
+    <div class="gutter"><span class="idx">12</span><span class="sect">Cast</span></div>
     <div class="body">
-      <span class="eyebrow">The cast, and the asymmetry that makes it testable</span>
+      <span class="eyebrow">The asymmetry that makes it testable</span>
       <h2>Three of the five authors <em>defined</em> this benchmark.</h2>
       <table>
         <thead><tr><th>Author</th><th>What it is</th><th>Role</th></tr></thead>
@@ -600,33 +669,15 @@
           <tr><td><b>Claude Opus 4.8</b></td><td>our submission · 2026</td><td><span class="chip" style="background:var(--ink);color:var(--paper);border-color:var(--ink)">under test</span></td></tr>
         </tbody>
       </table>
-      <p>The three marked <b>built it</b> fail these tasks <strong>by definition</strong> — that is
-        why the tasks are here. Their rates are a ceiling, not an estimate.</p>
-      <p class="quote">Beating them is the weakest possible result. Reaching the human means something.</p>
+      <p>The three marked <b>built it</b> fail these tasks <strong>by definition</strong> — their
+        rates are a ceiling, not an estimate. Which is why <b>beating them is the weakest possible
+        result, and reaching the human is the one that means something.</b></p>
     </div>
   </section>
 
-  <!-- 11 -->
-  <section class="slide" data-sect="Flow">
-    <div class="gutter"><span class="idx">11</span><span class="sect">Flow</span></div>
-    <div class="body">
-      <span class="eyebrow">What you will actually run</span>
-      <h2>Validate. Evaluate. Compare.</h2>
-      <p class="lead">This is the flow anyone with a model follows. Today the model
-        is Claude and its 200 answers are already on disk — nothing is generated.</p>
-      <div class="layers">
-        <div class="layer"><span class="n">01</span><span class="t">the submission file is well formed: 200 ids, no duplicates, no strangers</span><span class="tool">validate-submission</span></div>
-        <div class="layer"><span class="n">02</span><span class="t">score it through the four layers</span><span class="tool">evaluate</span></div>
-        <div class="layer"><span class="n">03</span><span class="t">task-paired difference against every shipped baseline, 10,000 resamples</span><span class="tool">compare</span></div>
-      </div>
-      <p>Step 3 is where the roles matter: three of its four rows compare you with
-        models that <em>built</em> the benchmark. Only the human row is news.</p>
-    </div>
-  </section>
-
-  <!-- 12 -->
+  <!-- 13 -->
   <section class="slide" data-sect="Go">
-    <div class="gutter"><span class="idx">12</span><span class="sect">Go</span></div>
+    <div class="gutter"><span class="idx">13</span><span class="sect">Go</span></div>
     <div class="body">
       <span class="eyebrow">Let's go</span>
       <h2>Open a terminal.</h2>
@@ -648,7 +699,7 @@
 <div class="rail"><i id="rail"></i></div>
 <nav class="nav" aria-label="Slide navigation">
   <button id="prev" aria-label="Previous slide">‹</button>
-  <span class="count"><span id="cur">1</span>/<span id="tot">12</span></span>
+  <span class="count"><span id="cur">1</span>/<span id="tot">13</span></span>
   <button id="next" aria-label="Next slide">›</button>
 </nav>
 
