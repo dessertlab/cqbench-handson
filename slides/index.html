@@ -547,20 +547,20 @@
     <div class="body">
       <span class="eyebrow">How the tasks were chosen</span>
       <h2 class="wide">A task is here <em>because</em> models already failed it.</h2>
-      <p class="mono" style="font-size:.82em"><span class="num">~256,000</span> candidate Python
-        functions in &nbsp;→&nbsp; <span class="num">10,354</span> tasks out. Five conditions did it.</p>
-      <table>
-        <tbody>
-          <tr><td class="mono">01</td><td>the human original parses, exposes the signature, is non-trivial</td></tr>
-          <tr><td class="mono">02</td><td>three models answered it — <b>gpt-3.5-turbo</b>, <b>DeepSeek-Coder 33B</b>, <b>Qwen2.5-Coder 32B</b></td></tr>
-          <tr><td class="mono">03</td><td>an answer counted only above <b>10%</b> of the human's nloc or Halstead volume</td></tr>
-          <tr><td class="mono">04</td><td>at least <b>two</b> of the three produced <b>≥ 3 findings</b> each</td></tr>
-          <tr><td class="mono">05</td><td>and those findings <b>shared a class</b> — same ODC type, or same CWE</td></tr>
-        </tbody>
-      </table>
-      <p>Condition 05 does not select <em>hard</em> tasks. It selects tasks where independent models
-        <strong>fail the same way</strong>. All <span class="mono">10,354</span> cleared these five —
-        the <span class="mono">200</span> we score today are simply a sample of them.</p>
+      <p class="mono" style="font-size:.8em"><span class="num">~256,000</span> candidate Python
+        functions in &nbsp;→&nbsp; <span class="num">10,354</span> tasks out. These three did the filtering.</p>
+      <div class="cols">
+        <div class="card"><span class="label">ChatGPT · general purpose</span><p class="mono" style="font-size:.9em;color:var(--ink)">gpt-3.5-turbo · 2023</p></div>
+        <div class="card"><span class="label">DeepSeek-Coder · code, open</span><p class="mono" style="font-size:.9em;color:var(--ink)">33B-Instruct · 2024</p></div>
+        <div class="card"><span class="label">Qwen2.5-Coder · code, open</span><p class="mono" style="font-size:.9em;color:var(--ink)">32B-Instruct · 2024</p></div>
+      </div>
+      <p>Every candidate went to all three. A task was kept only when <b>two of the three</b> produced
+        <b>three or more findings each</b>, and those findings <b>fell in the same class</b> — the same
+        ODC defect type, or the same CWE.</p>
+      <p>That last condition is the whole idea: it does not select <em>hard</em> tasks, it selects tasks
+        where independent models <strong>fail the same way</strong>, so the failure is a property of the
+        problem rather than of one model. All <span class="mono">10,354</span> cleared it; the
+        <span class="mono">200</span> are a sample.</p>
     </div>
   </section>
 
@@ -631,7 +631,9 @@
         <span class="k">and</span> zero defects <span class="k">and</span> zero findings
       </p>
       <p>One number, six conjoined conditions, and a taxonomy translation in the middle of it.
-        Notebook 01 takes it apart by hand.</p>
+        These are also the layers that <em>picked</em> the tasks three slides ago: the entry gate
+        ran 01 and 02 on the human original, and counted 03 and 04 on the three models.
+        Notebook 01 takes the whole thing apart by hand.</p>
     </div>
   </section>
 
