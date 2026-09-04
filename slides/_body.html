@@ -353,7 +353,9 @@
           <tr><td class="mono">05</td><td>and those findings <b>shared a class</b> — same ODC type, or same CWE</td></tr>
         </tbody>
       </table>
-      <p>Condition 05 does not select <em>hard</em> tasks. It selects tasks where independent models <strong>fail the same way</strong>.</p>
+      <p>Condition 05 does not select <em>hard</em> tasks. It selects tasks where independent models
+        <strong>fail the same way</strong>. All <span class="mono">10,354</span> cleared these five —
+        the <span class="mono">200</span> we score today are simply a sample of them.</p>
     </div>
   </section>
 
@@ -363,15 +365,17 @@
     <div class="body">
       <span class="eyebrow">The 200 tasks you will score</span>
       <h2>1,972 findings put them there.</h2>
+      <p class="mono" style="font-size:.78em">Python only, today &nbsp;·&nbsp; <b>200</b> drawn
+        from the <b>10,354</b> Python tasks — a stratified sample, <b>not</b> a further filter.</p>
       <div class="cols">
         <div class="card"><span class="stat num">9.9</span><span class="label">findings per task, by the three</span><p>Never fewer than six. One task carries 49.</p></div>
-        <div class="card"><span class="stat num">177</span><span class="label">tasks with an agreed defect type</span><p>Assignment 101 · Interface 74 · Checking 66 · Func/Class/Obj 21 · Algorithm 13</p></div>
-        <div class="card"><span class="stat num">100</span><span class="label">tasks with an agreed weakness class</span><p>14 distinct CWEs. Command injection 39 · resource exhaustion 33 · XXE 11</p></div>
+        <div class="card"><span class="stat num">177</span><span class="label">of the 200, where two models hit the same defect type</span><p>Assignment 101 · Interface 74 · Checking 66 · Func/Class/Obj 21 · Algorithm 13 — a task can carry more than one.</p></div>
+        <div class="card"><span class="stat num">100</span><span class="label">of the 200, where two models hit the same weakness class</span><p>14 distinct CWEs. Command injection 39 · resource exhaustion 33 · XXE 11</p></div>
       </div>
-      <p class="mono" style="font-size:.8em">three strata &nbsp;·&nbsp; defects only <b>100</b>
+      <p class="mono" style="font-size:.76em">three strata &nbsp;·&nbsp; defects only <b>100</b>
         &nbsp;·&nbsp; both <b>77</b> &nbsp;·&nbsp; weaknesses only <b>23</b></p>
-      <p>That is what <em>quality</em> means here, made countable: not a score out of ten, but
-        a set of named failure classes that two independent models walked into together.</p>
+      <p>That is what <em>quality</em> means here, made countable: a set of named failure classes
+        that two independent models walked into together.</p>
     </div>
   </section>
 
