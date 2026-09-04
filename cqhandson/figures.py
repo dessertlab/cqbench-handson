@@ -503,27 +503,8 @@ def plot_cwe(results: pd.DataFrame, top: int = 8, save: str | None = "cwe"):
     return _save(fig, save)
 
 
-def plot_consensus(results: pd.DataFrame, tasks: dict,
-                   save: str | None = "consensus"):
-    """Does the selection generalise beyond the models that made it?
-
-    Each task carries the weakness class two 2023-24 models agreed on. This asks
-    how often each author trips *that* class — the three that built the
-    benchmark are the ceiling, the human is the floor.
-    """
-    from .loading import load_results
-
-    consensus = {t: set(task["difficulty"]["consensus_cwes"])
-                 for t, task in tasks.items()}
-    gate = [t for t, classes in consensus.items() if classes]
-
-    values = {}
-    for author in [a for a in AUTHOR_ORDER if a in set(results["author"])]:
-        scored = {r["task_id"]: r for r in load_results(author)}
-        values[AUTHOR_LABELS[author]] = 100 * sum(
-            bool(set(scored[t]["cwes"]) & consensus[t]) for t in gate) / len(gate)
-    series = pd.Series(values)
-
+def _consensus_bars(series: pd.Series, xlabel: str, title: str, save: str | None):
+    """One bar per author, the human's rate marked as the floor."""
     fig, axis = plt.subplots(figsize=(9.5, 3.6))
     bars = axis.barh(range(len(series)), series.to_numpy(), height=0.6,
                      color=label_colors(series.index))
@@ -535,9 +516,53 @@ def plot_consensus(results: pd.DataFrame, tasks: dict,
     axis.set_yticks(range(len(series)), series.index)
     axis.invert_yaxis()
     axis.set_xlim(0, 105)
-    axis.set_xlabel(f"% of the {len(gate)} tasks that carry a weakness-class consensus")
-    axis.set_title("Does the selection generalise? Tripping the task's own class")
+    axis.set_xlabel(xlabel)
+    axis.set_title(title)
     axis.grid(axis="y", visible=False)
     role_legend(axis, loc="lower right")
     fig.tight_layout()
     return _save(fig, save)
+
+
+def _consensus_rates(results: pd.DataFrame, tasks: dict, key: str, hit) -> tuple:
+    """Per-author % of the gated tasks where `hit` fires, and the gate size."""
+    from .loading import load_results
+
+    consensus = {t: set(task["difficulty"].get(key) or ()) for t, task in tasks.items()}
+    gate = [t for t, classes in consensus.items() if classes]
+    values = {}
+    for author in [a for a in AUTHOR_ORDER if a in set(results["author"])]:
+        scored = {r["task_id"]: r for r in load_results(author)}
+        values[AUTHOR_LABELS[author]] = 100 * sum(
+            bool(hit(scored[t]) & consensus[t]) for t in gate) / len(gate)
+    return pd.Series(values), len(gate)
+
+
+def plot_consensus(results: pd.DataFrame, tasks: dict,
+                   save: str | None = "consensus"):
+    """Does the selection generalise beyond the models that made it?
+
+    Each task carries the weakness class two 2023-24 models agreed on. This asks
+    how often each author trips *that* class — the three that built the
+    benchmark are the ceiling, the human is the floor.
+    """
+    series, n = _consensus_rates(
+        results, tasks, "consensus_cwes", lambda row: set(row["cwes"]))
+    return _consensus_bars(
+        series,
+        f"% of the {n} tasks that carry a weakness-class consensus",
+        "Does the selection generalise? Tripping the task's own weakness class",
+        save)
+
+
+def plot_consensus_odc(results: pd.DataFrame, tasks: dict,
+                       save: str | None = "consensus_odc"):
+    """The same question on the defect side, using the agreed ODC class."""
+    series, n = _consensus_rates(
+        results, tasks, "consensus_odc",
+        lambda row: {ODC_LABELS[c] for c in ODC_COLUMNS if (row.get(c) or 0) > 0})
+    return _consensus_bars(
+        series,
+        f"% of the {n} tasks that carry a defect-class consensus",
+        "Does the selection generalise? Tripping the task's own defect class",
+        save)

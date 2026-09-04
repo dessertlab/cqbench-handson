@@ -425,32 +425,13 @@ display(pd.DataFrame({ch.AUTHOR_LABELS[a]: clean_strict(a) for a in ch.AUTHOR_OR
 # before you rank anything.
 
 # %% [markdown]
-# ## Exercise — move a boundary, watch the number move
-#
-# Every filter above is a decision someone made. Change one and see what happens
-# to Claude's defect count.
-#
-# **TODO:** add `unused-argument` to the exclusion list — the argument being that
-# scoring a bare method out of its class manufactures that finding — and
-# recompute `defects_total`.
-
-# %%
-# TODO: build `my_exclusions` = the benchmark's list plus "unused-argument",
-#       re-apply filters 1-3 to `raw`, and print the new defects_total.
-#
-# my_exclusions = ...
-# my_survivors  = raw[...]
-# my_counted    = ...
-# print("defects_total with my exclusion list:", len(my_counted))
-
-# %% [markdown]
-# **Discussion.** You just changed a published number by editing one line of a
-# spreadsheet. Two questions worth arguing about over the next hour:
+# **Two questions to keep open for the rest of the day.**
 #
 # 1. Is `unused-argument` on a bare method a *defect in the generated code*, or
 #    an artifact of the task format? Whose responsibility is it to decide?
-# 2. If a reviewer can move your headline metric by 20% with a defensible tweak
-#    to an exclusion list, what should a paper report alongside the metric?
+# 2. Every exclusion above is one line of a spreadsheet, and a reviewer could
+#    defend editing it. If a defensible tweak moves your headline metric, what
+#    should a paper report alongside that metric?
 #
 # ---
 # ## Takeaways

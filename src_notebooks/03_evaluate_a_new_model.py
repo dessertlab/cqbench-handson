@@ -22,7 +22,8 @@ sys.path.insert(0, str(pathlib.Path.cwd().parent))
 import pandas as pd
 import cqhandson as ch
 from cqhandson import paths, runner, figures
-from cqhandson.metrics import compare_submission
+from cqhandson.metrics import compare_submission, paired_bootstrap_ci
+from cqhandson.metrics import ODC_COLUMNS, ODC_LABELS
 
 ch.style()
 pd.set_option("display.width", 200)
@@ -179,12 +180,19 @@ for metric, title in [
 # three models' failures, so of course those three fail it. Does it have any
 # force against a model that took no part?*
 #
-# Half of our tasks carry a **consensus weakness class** — a specific CWE that
-# two 2023–24 models both produced, fixed at selection time, years before Claude
-# existed. Does Claude trip that same class?
+# Each task was kept because two 2023–24 models failed it **in the same way**,
+# and that shared way was recorded at selection time — years before Claude
+# existed. It was recorded twice, once per side of the pipeline:
+#
+# * a **consensus weakness class**, a specific CWE — 100 of our tasks carry one;
+# * a **consensus defect class**, a specific ODC category — 177 carry one.
+#
+# So the question is not "does Claude produce findings". It is: **does Claude
+# trip the class the task itself predicted?**
 
 # %%
-figures.plot_consensus(results, ch.load_tasks());
+tasks = ch.load_tasks()
+figures.plot_consensus(results, tasks);
 
 # %% [markdown]
 # The three construction models sit near the ceiling, as they must — they
@@ -193,9 +201,70 @@ figures.plot_consensus(results, ch.load_tasks());
 #
 # **Claude: 49%.** More than double the human rate on the same tasks. The tasks
 # elicit not merely findings but the *same class* of finding from a model
-# outside the selection. That is the strongest available answer to the "you only
-# measured your own construction set" objection — and it is why a
-# failure-derived benchmark is worth keeping.
+# outside the selection.
+#
+# Now the same question on the defect side.
+
+# %%
+figures.plot_consensus_odc(results, tasks);
+
+# %% [markdown]
+# A different picture. The construction models are still near the ceiling — 90%
+# and 86% — but the **human is at 51%**, not 22%, and **Claude is at 59%**.
+#
+# Do not read those two bars by eye. Both figures compare authors on the same
+# tasks, so pair them and put an interval on the difference:
+
+# %%
+def consensus_gap(key, hit, submission="claude", reference="human"):
+    """Claude minus human on the tasks that carry a class of this kind."""
+    consensus = {t: set(task["difficulty"].get(key) or ()) for t, task in tasks.items()}
+    gate = sorted(t for t, classes in consensus.items() if classes)
+
+    def vector(author):
+        scored = {r["task_id"]: r for r in ch.load_results(author)}
+        return [float(bool(hit(scored[t]) & consensus[t])) for t in gate]
+
+    return paired_bootstrap_ci(vector(submission), vector(reference),
+                               label=f"consensus:{key}")
+
+
+ODC_HIT = lambda row: {ODC_LABELS[c] for c in ODC_COLUMNS if (row.get(c) or 0) > 0}
+
+for key, hit, label in [("consensus_cwes", lambda row: set(row["cwes"]), "weakness class (CWE)"),
+                        ("consensus_odc", ODC_HIT, "defect class (ODC)")]:
+    stats = consensus_gap(key, hit)
+    print(f"{label:<22} n={stats['n']:>4}   Claude {100 * stats['a']:>3.0f}%   "
+          f"human {100 * stats['b']:>3.0f}%   gap {stats['delta']:+.3f}  "
+          f"[{stats['ci_lo']:+.3f}; {stats['ci_hi']:+.3f}]")
+
+# %% [markdown]
+# Both gaps are real — neither interval touches zero — but they are not the same
+# size:
+#
+# | | Claude | human | gap | interval |
+# |---|---:|---:|---:|---|
+# | weakness class (CWE), n=100 | 49% | 22% | **+0.270** | [+0.170; +0.370] |
+# | defect class (ODC), n=177 | 59% | 51% | **+0.085** | [+0.017; +0.147] |
+#
+# **The security side of the selection transfers; the defect side barely does.**
+# On CWEs the task predicts a frontier model's weakness more than twice as often
+# as it predicts the human's. On ODC classes the same tasks separate Claude from
+# the human by eight points, and only just.
+#
+# That is not a failure of the benchmark — it is a finding about *which half of
+# it generalises*. Two honest readings, and they are worth arguing about:
+#
+# * the ODC classes are coarse (five buckets in practice) and the commonest one,
+#   Assignment, is easy to trip by accident, so agreement on it is cheap;
+# * or a defect-prone task really is less transferable than a security-prone
+#   one, because a security weakness follows from *how you solve* the problem
+#   while a defect follows from how carefully you wrote it.
+#
+# Either way the answer to the objection is: **yes, but unevenly.** The tasks
+# retain predictive force against a model that took no part in building them,
+# clearly on security and weakly on defects. State it that way and nobody can
+# take it apart.
 #
 # ---
 # ## Takeaways
@@ -208,5 +277,8 @@ figures.plot_consensus(results, ch.load_tasks());
 #    without any statistics vocabulary.
 # 4. **A composite metric can collapse for the wrong reason** — check structural
 #    validity before you rank anything.
+# 5. **A failure-derived benchmark has to prove it still bites.** Ours does, on
+#    security clearly and on defects only weakly — and saying which is which is
+#    part of the result.
 #
 # Next: `04_where_the_differences_are.ipynb` — what the code actually looks like.

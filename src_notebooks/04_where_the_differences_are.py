@@ -28,13 +28,11 @@ sys.path.insert(0, str(pathlib.Path.cwd().parent))
 import pandas as pd
 import cqhandson as ch
 from cqhandson import figures, whatif
-from cqhandson.metrics import compare_submission
 
 ch.style()
 pd.set_option("display.width", 200)
 
 results = ch.results_frame()
-tasks = ch.load_tasks()
 display(ch.results_source().to_frame())
 
 # %% [markdown]
@@ -146,37 +144,20 @@ figures.plot_top_symbols(results);
 # models. No test suite catches either.
 
 # %% [markdown]
-# So which of this section's findings survive if we simply refuse to count the
-# format artifacts? `whatif.without_symbols` drops the four checks above and
-# re-derives every ODC column.
-
-# %%
-deartifacted = whatif.without_symbols(results, whatif.FORMAT_ARTIFACTS)
-
-def incidence(frame, column):
-    """% of the 200 tasks where this author has at least one such finding."""
-    return 100 * frame.assign(hit=frame[column] > 0).groupby(
-        "author_label", observed=True)["hit"].mean()
-
-display(pd.DataFrame({
-    "defective %": incidence(results, "defects_total"),
-    "defective %, de-artifacted": incidence(deartifacted, "defects_total"),
-    "Checking %": incidence(results, "def_checking"),
-    "Checking %, de-artifacted": incidence(deartifacted, "def_checking"),
-}).round(1))
-
-# %% [markdown]
-# Every absolute rate falls by twenty to twenty-five points — the human from 62
-# to 41, DeepSeek from 89.5 to 64.5. A defensible edit to an exclusion list moved
-# **every level in this notebook**. It barely moved the *order* between authors.
+# Two of those three groups are not properties of the generated code at all: the
+# checks inherited from the requested signature, and the ones manufactured by
+# scoring a method outside its class. Refuse to count them and **every absolute
+# rate in this notebook falls by twenty points or more** — while the order
+# between authors barely changes. Remember that before quoting any level.
 #
-# And one column does not move at all: **Checking** stays at 16.0 / 32.5 / 39.5 /
-# 27.0 / 19.5, because none of the four artifacts map there. It is a clean
-# control column, and it carries the one claim from RQ2 that needs no caveat:
+# One family is untouched by that objection: **Checking** — missing validation,
+# missing guards, an unchecked return code. None of the format artifacts map
+# there, so it is a clean control column, and it carries the one claim from RQ2
+# that needs no caveat:
 #
 # > The 2023–24 models produce missing-validation and missing-guard defects
-# > **twice as often as the human reference**, and that survives every filter we
-# > can think to apply. Claude, at 19.5 against the human's 16.0, does not.
+# > **twice as often as the human reference**, and no filter we can think to
+# > apply removes that. Claude, at 19.5% against the human's 16.0%, does not.
 
 # %% [markdown]
 # ---
@@ -240,56 +221,6 @@ figures.plot_validity(adjusted, save=None);
 
 # %% [markdown]
 # ---
-# # Now try to break the result
-#
-# The last step of an evaluation is to attack your own headline. If it falls
-# over, you want to be the one who found out — not a reviewer.
-#
-# `B404` fires on `import subprocess` — the import itself, not any misuse. It is
-# the loudest rule against our submission (**22** of Claude's findings, against
-# the human's **1**) and the most obviously permissive one in the set. It is
-# exactly the rule you would remove if you wanted the security result to
-# disappear. So let us remove it.
-#
-# **Before running the cell: does the gap survive?** Take a show of hands.
-
-# %%
-DROP_RULES = ("B404",)      # ← then try () to restore, or add "B113"
-
-filtered = whatif.without_rules(results, DROP_RULES)
-figures.plot_forest(compare_submission(filtered, "vulnerability_free_rate"),
-                    f"Free of security findings — without {', '.join(DROP_RULES) or 'nothing'}",
-                    save=None)
-figures.plot_forest(compare_submission(filtered, "high_severity_free_rate"),
-                    "Free of high-severity findings — same filter", save=None);
-
-# %% [markdown]
-# | rule removed | gap on incidence | verdict | high severity |
-# |---|---|---|---|
-# | none | −0.125 [−0.190; −0.060] | real | −0.060 |
-# | `B404` | −0.080 [−0.140; −0.020] | real | −0.060 |
-# | `B404` + `B113` | **−0.095** [−0.155; −0.040] | real | −0.060 |
-#
-# One third of the gap was that rule. Two thirds were not, and the interval
-# never touches zero. High severity does not move by a thousandth, because
-# `B404` is informational and never enters that count — those findings are
-# `B410` (unsafe XML parsing) and `B602` (`shell=True`), rules that require
-# genuine misuse.
-#
-# And piling on **hurts**: removing `B113` as well *widens* the gap to −0.095,
-# because that rule fires on the human 7 times and on Claude 6 — so dropping it
-# helps the human more. **No single rule is carrying the result.**
-#
-# You did not break the claim, and that is a result too. What you can state at
-# the end is more *precise* than the headline:
-#
-# > The frontier model's security gap against human code is not an artifact of
-# > one permissive import-level rule: it narrows by about a third when that rule
-# > is removed and remains significant, and the high-severity gap — unsafe XML
-# > parsing and shell execution — does not move at all.
-
-# %% [markdown]
-# ---
 # # So — is the model any good?
 #
 # We have run a lot of code. Here is the answer in plain words, because a
@@ -307,9 +238,8 @@ figures.plot_forest(compare_submission(filtered, "high_severity_free_rate"),
 #
 # **On security: no, clearly worse.** It trips a security rule on 28% of tasks
 # against the human's 15.5%, and a high-severity one on 7.5% against 1.5%.
-# Neither interval touches zero, and the gap survives removing the noisiest
-# rule. On the 100 tasks that carry a consensus weakness class, it trips *that
-# class* on 49% against the human's 22%.
+# Neither interval touches zero. On the 100 tasks that carry a consensus
+# weakness class, it trips *that class* on 49% against the human's 22%.
 #
 # **And the gap is one habit, not general sloppiness.** It is concentrated in
 # command execution — CWE-78, 26 findings against the human's 8: the model
@@ -346,11 +276,9 @@ figures.plot_forest(compare_submission(filtered, "high_severity_free_rate"),
 #    density — one confounder invented a finding about DeepSeek that was not there.
 # 3. **Not every counted defect was authored.** Some are inherited from the
 #    requested signature; some are manufactured by the evaluation format.
-# 4. **The last step is attacking your own headline.** A claim that survived a
-#    serious attempt to break it is worth more than one nobody tested.
-# 5. **Absolute rates are fragile; paired differences are robust.** Every
-#    exercise moved the levels a lot and the author-to-author comparisons much
-#    less, because every author meets the same artifacts on the same tasks.
+# 4. **Absolute rates are fragile; paired differences are robust.** The exercise
+#    moved the levels a lot and the author-to-author comparisons much less,
+#    because every author meets the same artifacts on the same tasks.
 #
 # If you design a benchmark, design it that way: make the claims you care about
 # live in **differences measured on shared items**, not in levels. Then even an

@@ -63,18 +63,18 @@ ships with; then we submit a model it has never seen.
 | 00 | `00_setup.ipynb` | Check the environment, read one task and its five answers, and see why *these* 200 tasks are in the benchmark |
 | 01 | `01_measurement_pipeline.ipynb` | What the four tools do, then run Pylint, Semgrep and lizard **by hand** on a single function and watch a raw finding become a benchmark number |
 | 02 | `02_reproduce_the_study.ipynb` | **Act I** — meet the five authors and the three roles they occupy, then score the four baselines the benchmark ships with |
-| 03 | `03_evaluate_a_new_model.ipynb` | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots, then ask whether the benchmark still bites a model built after it |
-| 04 | `04_where_the_differences_are.ipynb` | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move three measurement decisions and see which conclusions survive |
+| 03 | `03_evaluate_a_new_model.ipynb` | **Act II** — the real CQBench flow (**validate → evaluate → compare**) with Claude Opus 4.8 as the submission, read through forest plots, then ask whether the benchmark still bites a model built after it — on weakness classes and on defect classes |
+| 04 | `04_where_the_differences_are.ipynb` | **RQ1, RQ2, RQ3** in charts — structure and style, defect types, weakness classes — then move the complexity floor and see which conclusions survive |
 
 Almost every cell is a single call that draws a chart; the plumbing lives in
 `cqhandson/figures.py`, which is short and meant to be opened. The exception is
 notebook 01, where the code *is* the lesson: you run the analyzers yourself.
 
-Notebook 04 ends with one hands-on exercise and one demonstration, both one-line
-changes with a visual answer: move the complexity floor, then remove the loudest
-security rule and see whether the headline survives. It closes with a plain-words
-verdict on the model under test and a set of open questions about where the
-benchmark itself is attackable. Worked answers in `notebooks/solutions/`.
+Notebook 04 ends with one hands-on exercise — a one-line change with a visual
+answer: move the complexity floor and see which conclusions survive. It closes
+with a plain-words verdict on the model under test and a set of open questions
+about where the benchmark itself is attackable. Worked answer in
+`notebooks/solutions/`.
 
 ---
 
@@ -204,12 +204,11 @@ participants find them rather than being told:
 - **Ratio of means ≠ mean of ratios.** Claude's size relative to the human is
   0.99 one way and 1.38 the other. The size figure resolves it: every model is
   verbose on short functions and compressed on long ones.
-- **Attack your own headline before someone else does.** `B404` fires on
-  `import subprocess` and is the loudest rule against the submission — exactly
-  the rule you would drop to make the result go away. Dropping it narrows
-  Claude's vulnerability gap against the human by a third and leaves it
-  significant; the high-severity gap does not move at all. The loudest rule is
-  not the load-bearing one.
+- **A failure-derived benchmark has to prove it still bites.** Each task records
+  the class two 2023-24 models agreed on. A model built years later trips the
+  task's own *weakness* class on 49% of them against the human's 22% — but its
+  own *defect* class on only 59% against 51%. The selection transfers on
+  security and barely on defects, and saying which is which is the result.
 - **A pipeline can reproduce perfectly until it meets a dependency nobody
   pinned.** A de-duplication key whose only discriminating field is redacted
   unless the analyzer is logged in — see `vendor/PATCHES.md`.

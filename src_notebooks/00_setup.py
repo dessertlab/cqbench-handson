@@ -92,24 +92,25 @@ for author in ch.AUTHOR_ORDER:
     ch.show_code(author, TASK)
 
 # %% [markdown]
-# ### What did you just read?
+# ### Now rank them yourself
 #
-# Take thirty seconds and rank them yourself before scrolling on. Some things
-# worth noticing:
+# Do this before a single number appears. Put the five in order, best to worst,
+# and write down *why* — the reason matters more than the ranking.
 #
-# * **ChatGPT did not answer the question asked.** The prompt says
-#   `def install_key(self, key_data)`; it produced
-#   `install_untrusted_repo_signing_key(key_url)` — a different name, a different
-#   parameter, and a different job (it downloads a key from a URL). It is not
-#   *bad code*; it is *not the requested function*. Hold on to that distinction:
-#   it will dominate one of the results later.
-# * **Three of the five shell out to `apt-key`.** The human used a Python GPG
-#   binding instead. That difference is exactly the kind of thing a security
-#   analyzer notices.
-# * **Claude wrote by far the most defensive version** — it validates the input,
-#   handles both a path and raw key material, checks the return code, and raises
-#   with the captured stderr. It is also four times longer than everything else.
-#   Keep that in mind when we count defects in notebook 04.
+# Three questions to argue about in the room:
+#
+# 1. **Did each one answer the question that was asked?** Check every answer
+#    against the prompt's signature: the name first, then the parameters, one by
+#    one.
+# 2. **How does each one actually get the job done?** Look at what each answer
+#    reaches for. Two answers can solve the same problem by very different
+#    means, and an analyzer will not treat those means alike.
+# 3. **Which one would you approve in review?** And do you expect a static
+#    analyzer to agree with you?
+#
+# Keep your ranking. Notebook 01 measures this exact task and notebook 04 comes
+# back to it. Whether the tools agree with the room is the whole point of the
+# day.
 
 # %% [markdown]
 # ## 3. The human reference
@@ -217,10 +218,8 @@ display(roles)
 # **Exercise.** Pick another task and read its five answers. Some
 # suggestions with different flavours:
 #
-# * `python:gp247196` — a raw HTTP GET; watch what each author does about TLS
-#   verification and error handling.
-# * `python:gp329939` — reloading functions via `exec`; consensus CWEs are
-#   CWE-78 and CWE-95.
+# * `python:gp247196` — a raw HTTP GET.
+# * `python:gp329939` — reloading functions via `exec`.
 # * `python:gp280603` — no security angle at all, purely a defect-consensus task.
 
 # %%

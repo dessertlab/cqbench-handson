@@ -1,9 +1,9 @@
 # %% [markdown]
-# # 04 — Exercises, worked
+# # 04 — The exercise, worked
 #
 # Run `04_where_the_differences_are.ipynb` first. This notebook holds the worked
-# answer to its exercise and to the demo that follows it — and, more importantly,
-# what each one is evidence *for*.
+# answer to its exercise — and, more importantly, what that answer is evidence
+# *for*.
 
 # %%
 import sys, pathlib
@@ -11,8 +11,7 @@ sys.path.insert(0, str(pathlib.Path.cwd().parents[1]))
 
 import pandas as pd
 import cqhandson as ch
-from cqhandson import figures, whatif
-from cqhandson.metrics import compare_submission
+from cqhandson import whatif
 
 ch.style()
 pd.set_option("display.width", 200)
@@ -21,7 +20,7 @@ results = ch.results_frame()
 order = [ch.AUTHOR_LABELS[a] for a in ch.AUTHOR_ORDER]
 
 # %% [markdown]
-# ## Exercise 1 — where should the "too small to count" floor be?
+# ## The exercise — where should the "too small to count" floor be?
 
 # %%
 clean = pd.DataFrame({
@@ -67,76 +66,3 @@ display(disqualified)
 # The lesson generalises: when you add a filter to a composite metric, measure
 # how much of it is *new* rejection rather than assuming it earns its place. This
 # one is doing much less work than its prominence in the table suggests.
-
-# %% [markdown]
-# ## The demo — is the security gap carried by one rule?
-
-# %%
-filtered = whatif.without_rules(results, ("B404",))
-display(pd.DataFrame({
-    "vulnerable %, official": 100 * results.groupby("author_label", observed=True)["vulnerable"].mean(),
-    "vulnerable %, no B404": 100 * filtered.groupby("author_label", observed=True)["vulnerable"].mean(),
-}).reindex(order).round(1))
-
-for metric, title in [("vulnerability_free_rate", "Free of security findings — B404 removed"),
-                      ("high_severity_free_rate", "Free of high-severity findings — B404 removed")]:
-    display(compare_submission(filtered, metric).round(3))
-    figures.plot_forest(compare_submission(filtered, metric), title, save=None)
-
-# %% [markdown]
-# **Answer — and the answer is no, which is the more useful outcome.**
-#
-# **(1) Removing `B404` moves the levels, and almost only for the models.**
-#
-# | | official | without `B404` |
-# |---|---:|---:|
-# | Human | 15.5 | 15.0 |
-# | ChatGPT | 48.5 | 46.0 |
-# | DeepSeek-Coder | 54.0 | 50.0 |
-# | Qwen2.5-Coder | 41.5 | 34.5 |
-# | Claude Opus 4.8 | **28.0** | **23.0** |
-#
-# The human barely moves — one task. Every model drops, because models import
-# `subprocess` far more often than humans do: `B404` fires 110 times across the
-# five authors and **once** on the human.
-#
-# **(2) The conclusion narrows but survives.** The submission's gap against the
-# human reference on overall vulnerability incidence goes from **−0.125,
-# interval [−0.190, −0.060]** to **−0.080, interval [−0.140, −0.020]**. A third
-# of the gap was the import rule. Two thirds were not, and the interval still
-# clears zero.
-#
-# **(3) High severity does not move at all** — **−0.060, interval [−0.095,
-# −0.025]**, identical before and after. `B404` is an advisory finding; it never
-# enters the high-severity count. Those findings are `B410` (unsafe XML
-# parsing) and `B602` (`shell=True`), rules that require actual misuse rather
-# than an import.
-#
-# **Push harder and it still holds.** Removing the next-loudest rules as well
-# does not close the gap — and can widen it, because the human trips those rules
-# too, so the human benefits from their removal:
-#
-# | removed | delta | interval |
-# |---|---:|---|
-# | `B404` | −0.080 | [−0.140, −0.020] |
-# | `B404` + `B113` | −0.095 | [−0.155, −0.040] |
-# | `B404` + `B310` | −0.070 | [−0.130, −0.010] |
-#
-# **The lesson is that the loudest rule is not the load-bearing one.** `B404` is
-# the most-fired rule against our submission and the most obviously permissive
-# one in the set — an import is not a vulnerability. It is exactly the rule an
-# author would remove if they wanted to make the result go away, and removing it
-# leaves the conclusion standing.
-#
-# **What you are allowed to say afterwards** is more precise than the headline:
-#
-# > The frontier model's security gap against human code is not an artefact of
-# > one permissive import-level rule: it narrows by about a third when that rule
-# > is removed and remains significant, and the high-severity gap — unsafe XML
-# > parsing and shell execution — does not move at all.
-#
-# You did not break the claim, and that is a result too. The transferable skill
-# is the attempt: **the last step of an evaluation is attacking your own
-# headline.** A claim that has survived a serious attempt to break it is worth
-# more than one that was never tested — and had the attack succeeded, you would
-# have wanted to know before a reviewer did.
